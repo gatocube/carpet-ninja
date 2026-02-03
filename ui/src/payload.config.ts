@@ -1,5 +1,5 @@
 import { buildConfig } from 'payload'
-import { postgresAdapter } from '@payloadcms/db-postgres'
+import { vercelPostgresAdapter } from '@payloadcms/db-vercel-postgres'
 import { sqliteAdapter } from '@payloadcms/db-sqlite'
 import { lexicalEditor } from '@payloadcms/richtext-lexical'
 import { vercelBlobStorage } from '@payloadcms/storage-vercel-blob'
@@ -38,11 +38,9 @@ const getDatabaseAdapter = () => {
             },
         })
     }
-    console.log('[Payload Config] Using Postgres adapter')
-    return postgresAdapter({
-        pool: {
-            connectionString: process.env.DATABASE_URL || '',
-        },
+    console.log('[Payload Config] Using Vercel Postgres adapter')
+    // Uses POSTGRES_URL automatically from Vercel environment
+    return vercelPostgresAdapter({
         // Auto-create/update tables on startup (important for Vercel deployments)
         push: true,
     })

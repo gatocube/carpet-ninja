@@ -4,16 +4,17 @@ import { useState, FormEvent } from 'react'
 
 export function ContactForm() {
     const [isSubmitting, setIsSubmitting] = useState(false)
-    const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null)
+    const [isSubmitted, setIsSubmitted] = useState(false)
+    const [errorMessage, setErrorMessage] = useState<string | null>(null)
 
     const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
         e.preventDefault()
         
         // Prevent double submission
-        if (isSubmitting) return
+        if (isSubmitting || isSubmitted) return
         
         setIsSubmitting(true)
-        setMessage(null)
+        setErrorMessage(null)
 
         const formData = new FormData(e.currentTarget)
         const data = {
@@ -34,26 +35,48 @@ export function ContactForm() {
             const result = await response.json()
 
             if (response.ok) {
-                setMessage({ type: 'success', text: result.message })
-                // Reset form
-                ;(e.target as HTMLFormElement).reset()
-                
-                // Clear success message after 5 seconds
-                setTimeout(() => setMessage(null), 5000)
+                // Hide form and show success message
+                setIsSubmitted(true)
             } else {
-                setMessage({ 
-                    type: 'error', 
-                    text: result.error || 'Failed to submit. Please try again.' 
-                })
+                setErrorMessage(result.error || 'Failed to submit. Please try again.')
             }
         } catch (error) {
-            setMessage({ 
-                type: 'error', 
-                text: 'Network error. Please check your connection and try again.' 
-            })
+            setErrorMessage('Network error. Please check your connection and try again.')
         } finally {
             setIsSubmitting(false)
         }
+    }
+
+    const handleNewRequest = () => {
+        setIsSubmitted(false)
+        setErrorMessage(null)
+    }
+
+    // Show success message instead of form
+    if (isSubmitted) {
+        return (
+            <div className="sm:col-span-2 text-center py-12">
+                <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-gradient-to-r from-green-500/20 to-emerald-500/20 border-2 border-green-500/50 mb-6">
+                    <i className="fa-solid fa-check text-4xl text-green-400"></i>
+                </div>
+                <h3 className="text-2xl font-bold text-white mb-3">
+                    Thank You! 🎉
+                </h3>
+                <p className="text-white/70 mb-2">
+                    Your message has been sent successfully!
+                </p>
+                <p className="text-white/50 text-sm mb-8">
+                    We'll get back to you within 24 hours.
+                </p>
+                <button
+                    onClick={handleNewRequest}
+                    className="inline-flex items-center gap-2 text-pink-400 hover:text-pink-300 transition-colors text-sm"
+                >
+                    <i className="fa-solid fa-arrow-left"></i>
+                    Submit another request
+                </button>
+            </div>
+        )
     }
 
     return (
@@ -89,13 +112,10 @@ export function ContactForm() {
             ></textarea>
             <input type="hidden" name="source" value="website" />
             
-            {message && (
-                <div className={`sm:col-span-2 px-5 py-4 rounded-2xl ${
-                    message.type === 'success' 
-                        ? 'bg-green-500/20 border border-green-500/50 text-green-300' 
-                        : 'bg-red-500/20 border border-red-500/50 text-red-300'
-                }`}>
-                    {message.text}
+            {errorMessage && (
+                <div className="sm:col-span-2 px-5 py-4 rounded-2xl bg-red-500/20 border border-red-500/50 text-red-300">
+                    <i className="fa-solid fa-triangle-exclamation mr-2"></i>
+                    {errorMessage}
                 </div>
             )}
             

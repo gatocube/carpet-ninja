@@ -11,6 +11,75 @@ export const SiteSettings: GlobalConfig = {
             type: 'tabs',
             tabs: [
                 {
+                    label: 'Section Visibility',
+                    description: 'Enable or disable homepage sections',
+                    fields: [
+                        {
+                            name: 'showHero',
+                            label: 'Show Hero Section',
+                            type: 'checkbox',
+                            defaultValue: true,
+                            admin: {
+                                description: 'Main hero banner with CTA buttons',
+                            },
+                        },
+                        {
+                            name: 'showServices',
+                            label: 'Show Services Section',
+                            type: 'checkbox',
+                            defaultValue: true,
+                            admin: {
+                                description: 'Service cards (carpet cleaning, upholstery, etc.)',
+                            },
+                        },
+                        {
+                            name: 'showPricing',
+                            label: 'Show Pricing Section',
+                            type: 'checkbox',
+                            defaultValue: true,
+                            admin: {
+                                description: 'Pricing tiers and packages',
+                            },
+                        },
+                        {
+                            name: 'showResults',
+                            label: 'Show Results Section',
+                            type: 'checkbox',
+                            defaultValue: true,
+                            admin: {
+                                description: 'Before/After comparison images',
+                            },
+                        },
+                        {
+                            name: 'showReviews',
+                            label: 'Show Reviews Section',
+                            type: 'checkbox',
+                            defaultValue: true,
+                            admin: {
+                                description: 'Customer testimonials',
+                            },
+                        },
+                        {
+                            name: 'showCoverage',
+                            label: 'Show Coverage Section',
+                            type: 'checkbox',
+                            defaultValue: true,
+                            admin: {
+                                description: 'Service area map and cities list',
+                            },
+                        },
+                        {
+                            name: 'showContact',
+                            label: 'Show Contact Section',
+                            type: 'checkbox',
+                            defaultValue: true,
+                            admin: {
+                                description: 'Contact form and info',
+                            },
+                        },
+                    ],
+                },
+                {
                     label: 'Branding',
                     fields: [
                         {
@@ -101,3 +170,4 @@ export const SiteSettings: GlobalConfig = {
         },
     ],
 }
+

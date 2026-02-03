@@ -1,8 +1,10 @@
 import { defineConfig, devices } from '@playwright/test'
 
-// Use port 3555 for isolated test environment (SQLite)
+// Use PROD_URL if set (for testing external/production servers)
+// Otherwise use local test server on port 3556
+const PROD_URL = process.env.PROD_URL
 const TEST_PORT = process.env.PORT || '3556'
-const BASE_URL = `http://localhost:${TEST_PORT}`
+const BASE_URL = PROD_URL || `http://localhost:${TEST_PORT}`
 
 export default defineConfig({
     testDir: './e2e',
@@ -22,16 +24,19 @@ export default defineConfig({
             use: { ...devices['Desktop Chrome'] },
         },
     ],
-    webServer: {
-        command: 'bash scripts/test-server.sh',
-        url: BASE_URL,
-        reuseExistingServer: !process.env.CI,
-        timeout: 60000,
-        env: {
-            PAYLOAD_TEST_MODE: 'true',
-            PORT: TEST_PORT,
-            DATABASE_URL: 'file:./test.db',
-            PAYLOAD_SECRET: 'test-secret-for-e2e-testing-only',
+    // Only start webserver if not using external PROD_URL
+    ...(PROD_URL ? {} : {
+        webServer: {
+            command: 'bash scripts/test-server.sh',
+            url: BASE_URL,
+            reuseExistingServer: !process.env.CI,
+            timeout: 60000,
+            env: {
+                PAYLOAD_TEST_MODE: 'true',
+                PORT: TEST_PORT,
+                DATABASE_URL: 'file:./test.db',
+                PAYLOAD_SECRET: 'test-secret-for-e2e-testing-only',
+            },
         },
-    },
+    }),
 })

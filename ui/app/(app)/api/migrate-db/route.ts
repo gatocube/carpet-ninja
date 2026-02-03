@@ -43,12 +43,24 @@ export async function POST() {
                 }
             }
 
-            // Add citiesList column
+
+            // Add cities_list column (snake_case required by Payload)
             try {
-                await client.query(`ALTER TABLE site_settings ADD COLUMN IF NOT EXISTS "citiesList" text`)
-                migrations.push(`Added column: citiesList`)
+                // Check if snake_case column exists
+                const res = await client.query(`SELECT column_name FROM information_schema.columns WHERE table_name='site_settings' AND column_name='cities_list'`)
+                if (res.rows.length === 0) {
+                    // Check if camelCase exists from previous run
+                    const resCamel = await client.query(`SELECT column_name FROM information_schema.columns WHERE table_name='site_settings' AND column_name='citiesList'`)
+                    if (resCamel.rows.length > 0) {
+                        await client.query(`ALTER TABLE site_settings RENAME COLUMN "citiesList" TO cities_list`)
+                        migrations.push(`Renamed column citiesList to cities_list`)
+                    } else {
+                        await client.query(`ALTER TABLE site_settings ADD COLUMN cities_list text`)
+                        migrations.push(`Added column: cities_list`)
+                    }
+                }
             } catch (err) {
-                errors.push(`Column citiesList: ${err instanceof Error ? err.message : 'unknown error'}`)
+                errors.push(`Column cities_list: ${err instanceof Error ? err.message : 'unknown error'}`)
             }
 
             // Drop and recreate cities table with correct schema

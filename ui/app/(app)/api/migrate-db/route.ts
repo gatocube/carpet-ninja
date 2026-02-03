@@ -43,6 +43,14 @@ export async function POST() {
                 }
             }
 
+            // Add citiesList column
+            try {
+                await client.query(`ALTER TABLE site_settings ADD COLUMN IF NOT EXISTS "citiesList" text`)
+                migrations.push(`Added column: citiesList`)
+            } catch (err) {
+                errors.push(`Column citiesList: ${err instanceof Error ? err.message : 'unknown error'}`)
+            }
+
             // Drop and recreate cities table with correct schema
             try {
                 await client.query('DROP TABLE IF EXISTS site_settings_cities CASCADE')

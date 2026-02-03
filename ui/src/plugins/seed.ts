@@ -112,6 +112,61 @@ async function seedIfEmpty(payload: Payload) {
     // Always ensure admin user exists
     await ensureAdminUser(payload)
 
+    // Check development settings for force reseed flag
+    let devSettings: any = null
+    let shouldForceReseed = false
+    
+    try {
+        devSettings = await payload.findGlobal({ slug: 'development-settings' })
+        shouldForceReseed = devSettings?.forceReseedOnNextStart === true
+        
+        if (shouldForceReseed && devSettings?.isDevelopment) {
+            payload.logger.warn('🔄 FORCE RESEED ENABLED - Clearing all data...')
+            
+            // Delete all data from collections
+            const collections = ['services', 'reviews', 'pricing', 'contact-requests']
+            for (const collectionSlug of collections) {
+                try {
+                    const items = await payload.find({
+                        collection: collectionSlug,
+                        limit: 1000,
+                    })
+                    
+                    for (const item of items.docs) {
+                        await payload.delete({
+                            collection: collectionSlug,
+                            id: item.id,
+                        })
+                    }
+                    payload.logger.info(`   Cleared ${items.totalDocs} items from ${collectionSlug}`)
+                } catch (err) {
+                    // Collection might not exist yet, ignore
+                }
+            }
+            
+            // Clear media
+            try {
+                const mediaItems = await payload.find({
+                    collection: 'media',
+                    limit: 1000,
+                })
+                for (const item of mediaItems.docs) {
+                    await payload.delete({
+                        collection: 'media',
+                        id: item.id,
+                    })
+                }
+                payload.logger.info(`   Cleared ${mediaItems.totalDocs} media items`)
+            } catch (err) {
+                // Ignore
+            }
+            
+            payload.logger.info('✅ All data cleared, proceeding to reseed...')
+        }
+    } catch (error) {
+        // Development settings don't exist yet, that's fine
+    }
+
     // Check if any services exist (tables may not exist yet on first deploy)
     try {
         const existingServices = await payload.find({
@@ -119,7 +174,7 @@ async function seedIfEmpty(payload: Payload) {
             limit: 1,
         })
 
-        if (existingServices.totalDocs > 0) {
+        if (existingServices.totalDocs > 0 && !shouldForceReseed) {
             payload.logger.info('Data already exists, skipping seed')
             return
         }
@@ -128,7 +183,7 @@ async function seedIfEmpty(payload: Payload) {
         payload.logger.info('Tables not found, will seed after schema sync')
     }
 
-    payload.logger.info('Seeding initial data...')
+    payload.logger.info('🌱 Seeding initial data...')
 
     try {
         // Upload default images to media collection
@@ -338,6 +393,18 @@ async function seedIfEmpty(payload: Payload) {
                 popular: false,
                 icon: 'fa-solid fa-crown',
                 order: 3,
+            },
+        })
+
+        // Seed/Update DevelopmentSettings global
+        await payload.updateGlobal({
+            slug: 'development-settings',
+            data: {
+                isDevelopment: process.env.NODE_ENV !== 'production',
+                allowDataReset: false,
+                forceReseedOnNextStart: false, // Reset flag after seeding
+                lastSeedDate: new Date().toISOString(),
+                seedCount: (devSettings?.seedCount || 0) + 1,
             },
         })
 

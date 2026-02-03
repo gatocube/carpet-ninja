@@ -182,7 +182,6 @@ export default async function Home() {
             {/* Reviews Section */}
             {visibility?.showReviews !== false && (
             <section id="reviews" className="py-24 bg-[#1a1b26]/30">
-            <section id="reviews" className="py-24 bg-[#1a1b26]/30">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6">
                     <div className="text-center mb-16">
                         <span className="inline-block text-pink-500 text-sm font-semibold tracking-wider uppercase mb-4">Testimonials</span>
@@ -212,7 +211,6 @@ export default async function Home() {
 
             {/* Pricing Section */}
             {visibility?.showPricing !== false && (
-            <section id="pricing" className="py-24">
             <section id="pricing" className="py-24">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6">
                     <div className="text-center mb-16">
@@ -256,7 +254,6 @@ export default async function Home() {
             {/* Coverage Section */}
             {visibility?.showCoverage !== false && (
             <section id="coverage" className="py-24 bg-[#1a1b26]/40 border-y border-white/5">
-            <section id="coverage" className="py-24 bg-[#1a1b26]/40 border-y border-white/5">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6">
                     <div className="grid lg:grid-cols-2 gap-12 items-center">
                         <div>
@@ -286,7 +283,6 @@ export default async function Home() {
 
             {/* Contact Section */}
             {visibility?.showContact !== false && (
-            <section id="contact" className="py-24">
             <section id="contact" className="py-24">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6">
                     <div className="grid lg:grid-cols-2 gap-12 items-start">

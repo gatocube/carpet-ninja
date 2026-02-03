@@ -1,4 +1,5 @@
 import { getServices, getReviews, getPricing, getSiteSettings, getHero, getBeforeAfter, getSectionVisibility } from '@/lib/payload'
+import { ContactForm } from './components/ContactForm'
 
 // Enable dynamic rendering - content updates immediately when edited in admin
 export const dynamic = 'force-dynamic'
@@ -332,16 +333,7 @@ export default async function Home() {
                             </div>
                         </div>
                         <div className="bg-[#1a1b26]/70 backdrop-blur-xl border border-white/5 rounded-3xl p-8 shadow-2xl">
-                            <form action="/api/contact-requests" method="POST" className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                                <input required name="name" className="bg-[#0a0a0f]/60 border border-white/10 rounded-2xl px-5 py-4 focus:border-pink-500 focus:outline-none transition-colors" placeholder="Full name" />
-                                <input name="phone" className="bg-[#0a0a0f]/60 border border-white/10 rounded-2xl px-5 py-4 focus:border-pink-500 focus:outline-none transition-colors" placeholder="Phone" />
-                                <input required type="email" name="email" className="bg-[#0a0a0f]/60 border border-white/10 rounded-2xl px-5 py-4 sm:col-span-2 focus:border-pink-500 focus:outline-none transition-colors" placeholder="Email" />
-                                <textarea required name="message" rows={5} className="bg-[#0a0a0f]/60 border border-white/10 rounded-2xl px-5 py-4 sm:col-span-2 focus:border-pink-500 focus:outline-none transition-colors resize-none" placeholder="How can we help?"></textarea>
-                                <input type="hidden" name="source" value="website" />
-                                <button type="submit" className="sm:col-span-2 bg-gradient-to-r from-pink-500 to-indigo-500 text-white font-semibold px-8 py-4 rounded-full shadow-lg hover:opacity-90 transition-all">
-                                    Send Message <i className="fa-solid fa-paper-plane ml-2"></i>
-                                </button>
-                            </form>
+                            <ContactForm />
                         </div>
                     </div>
                 </div>

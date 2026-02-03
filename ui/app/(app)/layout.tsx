@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import './globals.css'
+import { RefreshRouteOnSave } from './components/RefreshRouteOnSave'
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://carpet-ninja.com'
 
@@ -29,6 +30,8 @@ export default function RootLayout({
                 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
             </head>
             <body className="bg-[#0a0a0f] text-white font-[Inter,system-ui,sans-serif] antialiased selection:bg-pink-500/30">
+                {/* Live Preview: refreshes page when content is edited in admin */}
+                <RefreshRouteOnSave />
                 {children}
             </body>
         </html>

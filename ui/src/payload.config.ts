@@ -78,6 +78,30 @@ export default buildConfig({
         meta: {
             titleSuffix: isTestMode() ? ' — Carpet Ninja CMS (Test)' : ' — Carpet Ninja CMS',
         },
+        // Live Preview configuration
+        livePreview: {
+            // URL of the frontend to preview
+            url: ({ data, collectionConfig }) => {
+                // Get the base URL from environment or default to localhost
+                const baseUrl = process.env.NEXT_PUBLIC_SERVER_URL || 'http://localhost:3000'
+
+                // Handle different document types
+                if (collectionConfig?.slug === 'services' && data?.slug) {
+                    return `${baseUrl}/services/${data.slug}`
+                }
+                // Default to homepage for globals and other content
+                return baseUrl
+            },
+            // Breakpoints for responsive preview
+            breakpoints: [
+                { label: 'Mobile', name: 'mobile', width: 375, height: 667 },
+                { label: 'Tablet', name: 'tablet', width: 768, height: 1024 },
+                { label: 'Desktop', name: 'desktop', width: 1440, height: 900 },
+            ],
+            // Enable for specific collections and globals
+            collections: ['services'],
+            globals: ['hero', 'site-settings'],
+        },
     },
     collections: [
         {

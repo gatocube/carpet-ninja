@@ -112,28 +112,94 @@ async function seedIfEmpty(payload: Payload) {
     // Always ensure admin user exists
     await ensureAdminUser(payload)
 
-    // Check if any services exist
-    const existingServices = await payload.find({
-        collection: 'services',
+    // Check if media collection is empty - if so, we need to upload images
+    const existingMedia = await payload.find({
+        collection: 'media',
         limit: 1,
     })
 
-    if (existingServices.totalDocs > 0) {
-        payload.logger.info('Data already exists, skipping seed')
+    // Check if any services exist
+    const existingServices = await payload.find({
+        collection: 'services',
+        limit: 10,
+    })
+
+    const needsImages = existingMedia.totalDocs === 0
+    const needsContent = existingServices.totalDocs === 0
+
+    if (!needsImages && !needsContent) {
+        payload.logger.info('Data and images already exist, skipping seed')
+        return
+    }
+
+    // Upload images if needed
+    let logoId: number | null = null
+    let faviconId: number | null = null
+    let beforeAfterId: number | null = null
+    let service1ImageId: number | null = null
+    let service2ImageId: number | null = null
+    let service3ImageId: number | null = null
+
+    if (needsImages) {
+        payload.logger.info('Uploading images...')
+        logoId = await uploadImage(payload, 'carpet-ninja.png', 'Carpet Ninja Logo')
+        faviconId = await uploadImage(payload, 'favicon.png', 'Favicon')
+        beforeAfterId = await uploadImage(payload, 'before-after.png', 'Before and After Cleaning')
+        service1ImageId = await uploadImage(payload, 'service-deep-carpet-cleaning.png', 'Deep Carpet Cleaning')
+        service2ImageId = await uploadImage(payload, 'service-upholstery-mattresses.png', 'Upholstery and Mattresses')
+        service3ImageId = await uploadImage(payload, 'service-stain-odor-removal.png', 'Stain and Odor Removal')
+
+        // Update site settings with images
+        await payload.updateGlobal({
+            slug: 'site-settings',
+            data: {
+                logo: logoId,
+                favicon: faviconId,
+                beforeAfterImage: beforeAfterId,
+            },
+        })
+        payload.logger.info('✅ Site settings updated with images')
+
+        // Update existing services with images if they exist but don't have images
+        if (existingServices.totalDocs > 0) {
+            const imageMap: Record<string, number | null> = {
+                'deep-carpet-cleaning': service1ImageId,
+                'upholstery-mattresses': service2ImageId,
+                'stain-odor-removal': service3ImageId,
+            }
+
+            for (const service of existingServices.docs) {
+                const imageId = imageMap[service.slug as string]
+                if (imageId && !service.image) {
+                    await payload.update({
+                        collection: 'services',
+                        id: service.id,
+                        data: { image: imageId },
+                    })
+                    payload.logger.info(`✅ Updated service "${service.title}" with image`)
+                }
+            }
+        }
+    }
+
+    // Seed full content if needed
+    if (!needsContent) {
+        payload.logger.info('Content already exists, only uploaded images')
         return
     }
 
     payload.logger.info('Seeding initial data...')
 
     try {
-        // Upload images first
-        payload.logger.info('Uploading images...')
-        const logoId = await uploadImage(payload, 'carpet-ninja.png', 'Carpet Ninja Logo')
-        const faviconId = await uploadImage(payload, 'favicon.png', 'Favicon')
-        const beforeAfterId = await uploadImage(payload, 'before-after.png', 'Before and After Cleaning')
-        const service1ImageId = await uploadImage(payload, 'service-deep-carpet-cleaning.png', 'Deep Carpet Cleaning')
-        const service2ImageId = await uploadImage(payload, 'service-upholstery-mattresses.png', 'Upholstery and Mattresses')
-        const service3ImageId = await uploadImage(payload, 'service-stain-odor-removal.png', 'Stain and Odor Removal')
+        // If we didn't upload images above, do it now
+        if (!needsImages) {
+            logoId = await uploadImage(payload, 'carpet-ninja.png', 'Carpet Ninja Logo')
+            faviconId = await uploadImage(payload, 'favicon.png', 'Favicon')
+            beforeAfterId = await uploadImage(payload, 'before-after.png', 'Before and After Cleaning')
+            service1ImageId = await uploadImage(payload, 'service-deep-carpet-cleaning.png', 'Deep Carpet Cleaning')
+            service2ImageId = await uploadImage(payload, 'service-upholstery-mattresses.png', 'Upholstery and Mattresses')
+            service3ImageId = await uploadImage(payload, 'service-stain-odor-removal.png', 'Stain and Odor Removal')
+        }
 
         // Seed SiteSettings global with images
         await payload.updateGlobal({

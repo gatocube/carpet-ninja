@@ -88,6 +88,7 @@ async function ensureAdminUser(payload: Payload) {
 /**
  * Helper function to upload an image from public folder to media collection
  * Works in both development (filesystem) and production (public URL fetch)
+ * Updated to ensure production seeding works correctly
  */
 async function uploadImageToMedia(payload: Payload, imagePath: string, alt: string) {
     try {

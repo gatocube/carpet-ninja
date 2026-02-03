@@ -93,7 +93,7 @@ export default async function Home() {
                         <p className="text-white/60 mt-4">Professional equipment • Trained techs • Pet-safe solutions</p>
                     </div>
                     <div className="grid md:grid-cols-3 gap-8">
-                        {services.map((service: { id: string; title: string; slug: string; description: string }, idx: number) => (
+                        {services.map((service, idx) => (
                             <div key={service.id} className="group bg-[#1a1b26]/70 backdrop-blur-xl border border-white/5 rounded-3xl overflow-hidden shadow-lg hover:shadow-pink-500/20 transition-all hover:-translate-y-2">
                                 <div className="relative overflow-hidden">
                                     <img src={`/service-${service.slug === 'deep-carpet-cleaning' ? 'deep-carpet-cleaning' : service.slug === 'upholstery-mattresses' ? 'upholstery-mattreses' : 'stain-order-removal'}.png`} alt={service.title} className="w-full h-56 object-cover transition-transform group-hover:scale-110" />
@@ -118,7 +118,7 @@ export default async function Home() {
                         <p className="text-white/60 mt-4">Rated 4.9 out of 5 by Bay Area homeowners</p>
                     </div>
                     <div className="grid md:grid-cols-3 gap-8">
-                        {reviews.map((review: { id: string; name: string; location: string; text: string; rating: number }) => (
+                        {reviews.map((review) => (
                             <div key={review.id} className="bg-[#1a1b26]/70 backdrop-blur-xl border border-white/5 p-8 rounded-3xl shadow-lg">
                                 <div className="flex items-center gap-1 text-pink-500 mb-4">
                                     {[...Array(review.rating)].map((_, i) => <i key={i} className="fa-solid fa-star"></i>)}
@@ -146,7 +146,7 @@ export default async function Home() {
                         <p className="text-white/60 mt-4">No hidden fees • No surprises • Just honest, upfront pricing</p>
                     </div>
                     <div className="grid md:grid-cols-3 gap-8">
-                        {pricing.map((tier: { id: string; title: string; price: number; rooms: string; features: { feature: string }[]; popular: boolean }) => (
+                        {pricing.map((tier) => (
                             <div key={tier.id} className={`relative bg-[#1a1b26]/70 backdrop-blur-xl rounded-3xl p-8 shadow-lg ${tier.popular ? 'border-2 border-pink-500 shadow-pink-500/20' : 'border border-white/5'}`}>
                                 {tier.popular && (
                                     <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">

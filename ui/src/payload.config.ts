@@ -3,6 +3,7 @@ import { postgresAdapter } from '@payloadcms/db-postgres'
 import { sqliteAdapter } from '@payloadcms/db-sqlite'
 import { lexicalEditor } from '@payloadcms/richtext-lexical'
 import { vercelBlobStorage } from '@payloadcms/storage-vercel-blob'
+import { resendAdapter } from '@payloadcms/email-resend'
 import sharp from 'sharp'
 import path from 'path'
 import { fileURLToPath } from 'url'
@@ -142,6 +143,12 @@ export default buildConfig({
         outputFile: path.resolve(dirname, 'payload-types.ts'),
     },
     db: getDatabaseAdapter(),
+    // Email configuration using Resend (requires RESEND_API_KEY env var)
+    email: resendAdapter({
+        defaultFromAddress: process.env.EMAIL_FROM || 'noreply@carpet-ninja.com',
+        defaultFromName: 'Carpet Ninja',
+        apiKey: process.env.RESEND_API_KEY || '',
+    }),
     plugins,
     sharp,
 })

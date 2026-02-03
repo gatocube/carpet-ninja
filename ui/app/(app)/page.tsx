@@ -130,8 +130,52 @@ export default async function Home() {
                 </div>
             </section>
 
+            {/* Before/After Section */}
+            <section className="py-24 bg-[#1a1b26]/30">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6">
+                    <div className="grid lg:grid-cols-2 gap-12 items-center">
+                        <div>
+                            <span className="inline-block text-pink-500 text-sm font-semibold tracking-wider uppercase mb-4">Real Results</span>
+                            <h2 className="text-3xl sm:text-4xl font-black">See the <span className="bg-gradient-to-r from-pink-500 to-indigo-500 bg-clip-text text-transparent">Difference</span></h2>
+                            <p className="mt-4 text-white/60 leading-relaxed">See the real-world results of our professional cleaning service.</p>
+                            <ul className="mt-6 space-y-4 text-white/80">
+                                <li className="flex items-center gap-3">
+                                    <span className="flex items-center justify-center w-8 h-8 bg-pink-500/20 rounded-full">
+                                        <i className="fa-solid fa-check text-pink-500 text-sm"></i>
+                                    </span>
+                                    Deep fiber flush
+                                </li>
+                                <li className="flex items-center gap-3">
+                                    <span className="flex items-center justify-center w-8 h-8 bg-indigo-500/20 rounded-full">
+                                        <i className="fa-solid fa-check text-indigo-500 text-sm"></i>
+                                    </span>
+                                    Residue-free rinse
+                                </li>
+                                <li className="flex items-center gap-3">
+                                    <span className="flex items-center justify-center w-8 h-8 bg-cyan-400/20 rounded-full">
+                                        <i className="fa-solid fa-check text-cyan-400 text-sm"></i>
+                                    </span>
+                                    Pet & kid friendly
+                                </li>
+                            </ul>
+                            <a href="#contact" className="inline-flex items-center gap-2 bg-gradient-to-r from-pink-500 to-indigo-500 text-white font-semibold px-6 py-3 rounded-full shadow-lg mt-8 hover:scale-105 transition-all">
+                                Get Your Quote <i className="fa-solid fa-arrow-right"></i>
+                            </a>
+                        </div>
+                        <div>
+                            <div className="relative">
+                                <div className="absolute -inset-4 bg-gradient-to-r from-pink-500/20 via-indigo-500/10 to-cyan-400/20 rounded-3xl blur-2xl -z-10"></div>
+                                <div className="rounded-3xl overflow-hidden border border-white/10 shadow-2xl">
+                                    <img src="/before-after.png" alt="Before and After cleaning comparison" className="w-full h-auto" />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
             {/* Reviews Section */}
-            <section id="reviews" className="py-24 bg-[#1a1b26]/30">
+            <section id="reviews" className="py-24">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6">
                     <div className="text-center mb-16">
                         <span className="inline-block text-pink-500 text-sm font-semibold tracking-wider uppercase mb-4">Testimonials</span>
@@ -194,6 +238,15 @@ export default async function Home() {
                                 </a>
                             </div>
                         ))}
+                    </div>
+
+                    {/* Money-Back Guarantee Banner */}
+                    <div className="mt-16">
+                        <div className="bg-[#1a1b26]/70 backdrop-blur-xl border border-pink-500/30 rounded-3xl p-8 text-center">
+                            <div className="text-4xl mb-4">💰</div>
+                            <h3 className="text-2xl font-bold mb-3">Money-Back Guarantee</h3>
+                            <p className="text-white/60 max-w-2xl mx-auto">Not satisfied? We&apos;ll come back and re-clean for free, or refund your money. That&apos;s our ninja promise.</p>
+                        </div>
                     </div>
                 </div>
             </section>

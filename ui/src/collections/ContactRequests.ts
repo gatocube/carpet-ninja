@@ -1,7 +1,7 @@
 import type { CollectionConfig } from 'payload'
+import { Resend } from 'resend'
 
-// Email address to receive contact form notifications
-const NOTIFICATION_EMAIL = process.env.CONTACT_NOTIFICATION_EMAIL || 'giorgi2510774@mail.ru'
+const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null
 
 export const ContactRequests: CollectionConfig = {
     slug: 'contact-requests',
@@ -19,43 +19,33 @@ export const ContactRequests: CollectionConfig = {
     },
     hooks: {
         afterChange: [
-            async ({ doc, operation, req }) => {
-                // Only send email on new contact request creation
-                if (operation !== 'create') return doc
+            async ({ operation, doc, req }) => {
+                // Only send email on create (new submissions)
+                if (operation === 'create' && resend && process.env.CONTACT_NOTIFICATION_EMAIL) {
+                    try {
+                        const { name, email, phone, message } = doc
 
-                try {
-                    // Check if email is configured
-                    if (!process.env.RESEND_API_KEY) {
-                        req.payload.logger.warn('RESEND_API_KEY not configured, skipping email notification')
-                        return doc
+                        await resend.emails.send({
+                            from: 'Carpet Ninja <noreply@carpet-ninja.com>',
+                            to: process.env.CONTACT_NOTIFICATION_EMAIL,
+                            subject: `🥷 New Contact Request from ${name}`,
+                            html: `
+                                <h2>New Contact Request</h2>
+                                <p><strong>Name:</strong> ${name}</p>
+                                <p><strong>Email:</strong> <a href="mailto:${email}">${email}</a></p>
+                                ${phone ? `<p><strong>Phone:</strong> ${phone}</p>` : ''}
+                                <p><strong>Message:</strong></p>
+                                <p>${message.replace(/\n/g, '<br>')}</p>
+                                <hr>
+                                <p><small>View in admin: ${process.env.NEXT_PUBLIC_SERVER_URL}/admin/collections/contact-requests/${doc.id}</small></p>
+                            `,
+                        })
+
+                        req.payload.logger.info(`✅ Email notification sent to ${process.env.CONTACT_NOTIFICATION_EMAIL}`)
+                    } catch (error) {
+                        req.payload.logger.error(`❌ Failed to send email notification: ${error}`)
                     }
-
-                    // Send notification email
-                    await req.payload.sendEmail({
-                        to: NOTIFICATION_EMAIL,
-                        subject: `🏠 New Contact Request from ${doc.name}`,
-                        html: `
-                            <h2>New Contact Request Received</h2>
-                            <p><strong>Name:</strong> ${doc.name}</p>
-                            <p><strong>Email:</strong> ${doc.email}</p>
-                            <p><strong>Phone:</strong> ${doc.phone || 'Not provided'}</p>
-                            <p><strong>Message:</strong></p>
-                            <blockquote style="border-left: 3px solid #ccc; padding-left: 10px; color: #555;">
-                                ${doc.message}
-                            </blockquote>
-                            <p><strong>Source:</strong> ${doc.source || 'Website'}</p>
-                            <hr />
-                            <p><small>Received at ${new Date().toLocaleString()}</small></p>
-                            <p><a href="${process.env.NEXT_PUBLIC_SERVER_URL || 'https://carpet-ninja.vercel.app'}/admin/collections/contact-requests/${doc.id}">View in Admin</a></p>
-                        `,
-                    })
-
-                    req.payload.logger.info(`✅ Email notification sent to ${NOTIFICATION_EMAIL} for contact request from ${doc.name}`)
-                } catch (error) {
-                    req.payload.logger.error(`❌ Failed to send email notification: ${error instanceof Error ? error.message : String(error)}`)
                 }
-
-                return doc
             },
         ],
     },

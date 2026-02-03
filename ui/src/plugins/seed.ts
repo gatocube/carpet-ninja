@@ -86,9 +86,18 @@ async function ensureAdminUser(payload: Payload) {
 
 /**
  * Helper function to upload an image from public folder to media collection
+ * In production (Vercel), filesystem access doesn't work, so we skip image uploads
+ * Images should be manually uploaded via admin panel or use external URLs
  */
 async function uploadImageToMedia(payload: Payload, imagePath: string, alt: string) {
     try {
+        // In production, skip filesystem-based uploads
+        if (process.env.VERCEL || process.env.NODE_ENV === 'production') {
+            payload.logger.info(`⏭️  Skipping image upload in production: ${imagePath} (upload manually via admin)`)
+            return null
+        }
+
+        // Local development: upload from filesystem
         const fullPath = path.join(process.cwd(), 'public', imagePath)
         
         if (!fs.existsSync(fullPath)) {
@@ -198,20 +207,35 @@ async function seedIfEmpty(payload: Payload) {
     payload.logger.info('🌱 Seeding initial data...')
 
     try {
-        // Upload default images to media collection
-        payload.logger.info('📸 Uploading default images...')
-        
-        const heroImage = await uploadImageToMedia(payload, 'carpet-ninja-car-3.png', 'Carpet Ninja Van')
-        const logo = await uploadImageToMedia(payload, 'carpet-ninja.png', 'Carpet Ninja Logo')
-        
-        const serviceImages = {
-            'deep-carpet-cleaning': await uploadImageToMedia(payload, 'service-deep-carpet-cleaning.png', 'Deep Carpet Cleaning Service'),
-            'upholstery-mattresses': await uploadImageToMedia(payload, 'service-upholstery-mattreses.png', 'Upholstery and Mattress Cleaning'),
-            'stain-odor-removal': await uploadImageToMedia(payload, 'service-stain-order-removal.png', 'Stain and Odor Removal Service'),
+        // Upload default images to media collection (local dev only)
+        let heroImage: any = null
+        let logo: any = null
+        let serviceImages: Record<string, any> = {
+            'deep-carpet-cleaning': null,
+            'upholstery-mattresses': null,
+            'stain-odor-removal': null,
         }
-        
-        const beforeImage = await uploadImageToMedia(payload, 'before.png', 'Before Cleaning')
-        const afterImage = await uploadImageToMedia(payload, 'after.png', 'After Cleaning')
+        let beforeImage: any = null
+        let afterImage: any = null
+
+        if (process.env.VERCEL || process.env.NODE_ENV === 'production') {
+            payload.logger.info('📸 Skipping image uploads in production (upload manually via admin panel)')
+            payload.logger.info('   See docs/PRODUCTION-IMAGE-UPLOAD.md for instructions')
+        } else {
+            payload.logger.info('📸 Uploading default images...')
+            
+            heroImage = await uploadImageToMedia(payload, 'carpet-ninja-car-3.png', 'Carpet Ninja Van')
+            logo = await uploadImageToMedia(payload, 'carpet-ninja.png', 'Carpet Ninja Logo')
+            
+            serviceImages = {
+                'deep-carpet-cleaning': await uploadImageToMedia(payload, 'service-deep-carpet-cleaning.png', 'Deep Carpet Cleaning Service'),
+                'upholstery-mattresses': await uploadImageToMedia(payload, 'service-upholstery-mattreses.png', 'Upholstery and Mattress Cleaning'),
+                'stain-odor-removal': await uploadImageToMedia(payload, 'service-stain-order-removal.png', 'Stain and Odor Removal Service'),
+            }
+            
+            beforeImage = await uploadImageToMedia(payload, 'before.png', 'Before Cleaning')
+            afterImage = await uploadImageToMedia(payload, 'after.png', 'After Cleaning')
+        }
         // Seed SiteSettings global
         await payload.updateGlobal({
             slug: 'site-settings',

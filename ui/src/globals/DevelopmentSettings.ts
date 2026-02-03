@@ -29,16 +29,6 @@ export const DevelopmentSettings: GlobalConfig = {
                             ],
                         },
                         {
-                            type: 'ui',
-                            name: 'developmentWarning',
-                            admin: {
-                                components: {
-                                    Field: () => null,
-                                },
-                                condition: (data) => data?.isDevelopment,
-                            },
-                        },
-                        {
                             name: 'allowDataReset',
                             type: 'checkbox',
                             label: 'Allow Automatic Data Reset',
@@ -63,15 +53,6 @@ export const DevelopmentSettings: GlobalConfig = {
                 {
                     label: 'Database Info',
                     fields: [
-                        {
-                            type: 'ui',
-                            name: 'databaseInfo',
-                            admin: {
-                                components: {
-                                    Field: () => null,
-                                },
-                            },
-                        },
                         {
                             name: 'lastSeedDate',
                             type: 'date',

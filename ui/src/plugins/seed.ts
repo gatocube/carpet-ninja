@@ -10,42 +10,6 @@ interface SeedPluginOptions {
 }
 
 /**
- * Helper to upload an image from the public folder to Media collection
- */
-async function uploadImage(payload: Payload, filename: string, alt: string): Promise<number | null> {
-    try {
-        const publicDir = path.join(process.cwd(), 'public')
-        const filePath = path.join(publicDir, filename)
-
-        if (!fs.existsSync(filePath)) {
-            payload.logger.warn(`Image not found: ${filePath}`)
-            return null
-        }
-
-        const fileBuffer = fs.readFileSync(filePath)
-
-        const mediaDoc = await payload.create({
-            collection: 'media',
-            data: {
-                alt: alt,
-            },
-            file: {
-                data: fileBuffer,
-                name: filename,
-                mimetype: filename.endsWith('.png') ? 'image/png' : 'image/jpeg',
-                size: fileBuffer.length,
-            },
-        })
-
-        payload.logger.info(`✅ Uploaded image: ${filename}`)
-        return mediaDoc.id as number
-    } catch (error) {
-        payload.logger.error(`❌ Failed to upload ${filename}: ${error instanceof Error ? error.message : String(error)}`)
-        return null
-    }
-}
-
-/**
  * Seed plugin that populates minimal test data on first run
  * Uses Payload's onInit hook to check and seed data
  */
@@ -77,55 +41,70 @@ export const seedPlugin = (options: SeedPluginOptions = {}) => {
  * Ensure a default admin user exists for development
  */
 async function ensureAdminUser(payload: Payload) {
-    const admins = [
-        {
-            email: process.env.PAYLOAD_ADMIN_EMAIL || 'admin@carpet-ninja.com',
-            password: process.env.PAYLOAD_ADMIN_PASSWORD || 'admin123',
-            roles: ['admin'],
-        },
-        {
-            email: 'alex@carpet-ninja.com',
-            password: 'barducks',
-            roles: ['admin'],
-        },
-        {
-            email: 'giorgi2510774@mail.ru',
-            password: 'spaghetti39pass',
-            roles: ['admin'],
-        },
-        {
-            email: 'agagent@carpet-ninja.com',
-            password: 'AgAgent2026!',
-            roles: ['admin'],
-        }
-    ]
+    const adminEmail = process.env.PAYLOAD_ADMIN_EMAIL || 'admin@carpet-ninja.com'
+    const adminPassword = process.env.PAYLOAD_ADMIN_PASSWORD || 'admin123'
 
-    for (const admin of admins) {
-        try {
-            const existingUsers = await payload.find({
-                collection: 'users',
-                where: {
-                    email: { equals: admin.email },
-                },
-                limit: 1,
-            })
+    try {
+        const existingUsers = await payload.find({
+            collection: 'users',
+            limit: 1,
+        })
 
-            if (existingUsers.totalDocs === 0) {
-                await payload.create({
-                    collection: 'users',
-                    data: {
-                        email: admin.email,
-                        password: admin.password,
-                        roles: admin.roles,
-                    },
-                })
-                payload.logger.info(`✅ Admin user created: ${admin.email}`)
-            } else {
-                payload.logger.info(`Admin user already exists: ${admin.email}`)
-            }
-        } catch (error) {
-            payload.logger.error(`❌ Failed to create admin user ${admin.email}: ${error instanceof Error ? error.message : String(error)}`)
+        if (existingUsers.totalDocs > 0) {
+            payload.logger.info(`Admin user already exists`)
+            return
         }
+
+        await payload.create({
+            collection: 'users',
+            data: {
+                email: adminEmail,
+                password: adminPassword,
+                roles: ['admin'],
+            },
+        })
+
+        payload.logger.info(`✅ Default admin user created: ${adminEmail}`)
+        payload.logger.info(`   Password: ${adminPassword}`)
+        payload.logger.info(`   ⚠️  Change these credentials in production!`)
+    } catch (error) {
+        payload.logger.error(`❌ Failed to create admin user: ${error instanceof Error ? error.message : String(error)}`)
+    }
+}
+
+/**
+ * Helper function to upload an image from public folder to media collection
+ */
+async function uploadImageToMedia(payload: Payload, imagePath: string, alt: string) {
+    try {
+        const fullPath = path.join(process.cwd(), 'public', imagePath)
+        
+        if (!fs.existsSync(fullPath)) {
+            payload.logger.warn(`Image not found: ${fullPath}`)
+            return null
+        }
+
+        const buffer = fs.readFileSync(fullPath)
+        const filename = path.basename(imagePath)
+
+        const media = await payload.create({
+            collection: 'media',
+            data: {
+                alt,
+            },
+            file: {
+                data: buffer,
+                mimetype: `image/${path.extname(imagePath).slice(1)}`,
+                name: filename,
+                size: buffer.length,
+            },
+        })
+
+        payload.logger.info(`✅ Uploaded image: ${filename}`)
+        return media
+    } catch (error) {
+        payload.logger.error(`❌ Failed to upload ${imagePath}: ${error instanceof Error ? error.message : String(error)}`)
+        return null
     }
 }
 
@@ -133,102 +112,95 @@ async function seedIfEmpty(payload: Payload) {
     // Always ensure admin user exists
     await ensureAdminUser(payload)
 
-    // Check if media collection is empty - if so, we need to upload images
-    const existingMedia = await payload.find({
-        collection: 'media',
-        limit: 1,
-    })
-
-    // Check if any services exist
-    const existingServices = await payload.find({
-        collection: 'services',
-        limit: 10,
-    })
-
-    const needsImages = existingMedia.totalDocs === 0
-    const needsContent = existingServices.totalDocs === 0
-
-    if (!needsImages && !needsContent) {
-        payload.logger.info('Data and images already exist, skipping seed')
-        return
-    }
-
-    // Upload images if needed
-    let logoId: number | null = null
-    let faviconId: number | null = null
-    let beforeAfterId: number | null = null
-    let service1ImageId: number | null = null
-    let service2ImageId: number | null = null
-    let service3ImageId: number | null = null
-
-    if (needsImages) {
-        // In production without Blob Storage, we shouldn't upload images because they will disappear (ephemeral FS)
-        // If we skip upload, the frontend will fallback to hardcoded public assets which works fine.
-        if (process.env.NODE_ENV === 'production' && !process.env.BLOB_READ_WRITE_TOKEN) {
-            payload.logger.warn('⚠️  Production detected without BLOB_READ_WRITE_TOKEN. Skipping image uploads to avoid ephemeral storage 404s.')
-        } else {
-            payload.logger.info('Uploading images...')
-            logoId = await uploadImage(payload, 'carpet-ninja.png', 'Carpet Ninja Logo')
-            faviconId = await uploadImage(payload, 'favicon.png', 'Favicon')
-            beforeAfterId = await uploadImage(payload, 'before-after.png', 'Before and After Cleaning')
-            service1ImageId = await uploadImage(payload, 'service-deep-carpet-cleaning.png', 'Deep Carpet Cleaning')
-            service2ImageId = await uploadImage(payload, 'service-upholstery-mattresses.png', 'Upholstery and Mattresses')
-            service3ImageId = await uploadImage(payload, 'service-stain-odor-removal.png', 'Stain and Odor Removal')
-        }
-
-        // Update site settings with images
-        await payload.updateGlobal({
-            slug: 'site-settings',
-            data: {
-                logo: logoId,
-                favicon: faviconId,
-                beforeAfterImage: beforeAfterId,
-            },
-        })
-        payload.logger.info('✅ Site settings updated with images')
-
-        // Update existing services with images if they exist but don't have images
-        if (existingServices.totalDocs > 0) {
-            const imageMap: Record<string, number | null> = {
-                'deep-carpet-cleaning': service1ImageId,
-                'upholstery-mattresses': service2ImageId,
-                'stain-odor-removal': service3ImageId,
-            }
-
-            for (const service of existingServices.docs) {
-                const imageId = imageMap[service.slug as string]
-                if (imageId && !service.image) {
-                    await payload.update({
-                        collection: 'services',
-                        id: service.id,
-                        data: { image: imageId },
+    // Check development settings for force reseed flag
+    let devSettings: any = null
+    let shouldForceReseed = false
+    
+    try {
+        devSettings = await payload.findGlobal({ slug: 'development-settings' })
+        shouldForceReseed = devSettings?.forceReseedOnNextStart === true
+        
+        if (shouldForceReseed && devSettings?.isDevelopment) {
+            payload.logger.warn('🔄 FORCE RESEED ENABLED - Clearing all data...')
+            
+            // Delete all data from collections
+            const collections = ['services', 'reviews', 'pricing', 'contact-requests']
+            for (const collectionSlug of collections) {
+                try {
+                    const items = await payload.find({
+                        collection: collectionSlug,
+                        limit: 1000,
                     })
-                    payload.logger.info(`✅ Updated service "${service.title}" with image`)
+                    
+                    for (const item of items.docs) {
+                        await payload.delete({
+                            collection: collectionSlug,
+                            id: item.id,
+                        })
+                    }
+                    payload.logger.info(`   Cleared ${items.totalDocs} items from ${collectionSlug}`)
+                } catch (err) {
+                    // Collection might not exist yet, ignore
                 }
             }
+            
+            // Clear media
+            try {
+                const mediaItems = await payload.find({
+                    collection: 'media',
+                    limit: 1000,
+                })
+                for (const item of mediaItems.docs) {
+                    await payload.delete({
+                        collection: 'media',
+                        id: item.id,
+                    })
+                }
+                payload.logger.info(`   Cleared ${mediaItems.totalDocs} media items`)
+            } catch (err) {
+                // Ignore
+            }
+            
+            payload.logger.info('✅ All data cleared, proceeding to reseed...')
         }
+    } catch (error) {
+        // Development settings don't exist yet, that's fine
     }
 
-    // Seed full content if needed
-    if (!needsContent) {
-        payload.logger.info('Content already exists, only uploaded images')
-        return
+    // Check if any services exist (tables may not exist yet on first deploy)
+    try {
+        const existingServices = await payload.find({
+            collection: 'services',
+            limit: 1,
+        })
+
+        if (existingServices.totalDocs > 0 && !shouldForceReseed) {
+            payload.logger.info('Data already exists, skipping seed')
+            return
+        }
+    } catch (error) {
+        // Tables don't exist yet - let Payload create them, then we'll seed
+        payload.logger.info('Tables not found, will seed after schema sync')
     }
 
-    payload.logger.info('Seeding initial data...')
+    payload.logger.info('🌱 Seeding initial data...')
 
     try {
-        // If we didn't upload images above, do it now
-        if (!needsImages) {
-            logoId = await uploadImage(payload, 'carpet-ninja.png', 'Carpet Ninja Logo')
-            faviconId = await uploadImage(payload, 'favicon.png', 'Favicon')
-            beforeAfterId = await uploadImage(payload, 'before-after.png', 'Before and After Cleaning')
-            service1ImageId = await uploadImage(payload, 'service-deep-carpet-cleaning.png', 'Deep Carpet Cleaning')
-            service2ImageId = await uploadImage(payload, 'service-upholstery-mattresses.png', 'Upholstery and Mattresses')
-            service3ImageId = await uploadImage(payload, 'service-stain-odor-removal.png', 'Stain and Odor Removal')
+        // Upload default images to media collection
+        payload.logger.info('📸 Uploading default images...')
+        
+        const heroImage = await uploadImageToMedia(payload, 'carpet-ninja-car-3.png', 'Carpet Ninja Van')
+        const logo = await uploadImageToMedia(payload, 'carpet-ninja.png', 'Carpet Ninja Logo')
+        
+        const serviceImages = {
+            'deep-carpet-cleaning': await uploadImageToMedia(payload, 'service-deep-carpet-cleaning.png', 'Deep Carpet Cleaning Service'),
+            'upholstery-mattresses': await uploadImageToMedia(payload, 'service-upholstery-mattreses.png', 'Upholstery and Mattress Cleaning'),
+            'stain-odor-removal': await uploadImageToMedia(payload, 'service-stain-order-removal.png', 'Stain and Odor Removal Service'),
         }
-
-        // Seed SiteSettings global with images
+        
+        const beforeImage = await uploadImageToMedia(payload, 'before.png', 'Before Cleaning')
+        const afterImage = await uploadImageToMedia(payload, 'after.png', 'After Cleaning')
+        // Seed SiteSettings global
         await payload.updateGlobal({
             slug: 'site-settings',
             data: {
@@ -236,12 +208,16 @@ async function seedIfEmpty(payload: Payload) {
                 email: 'hello@carpet-ninja.com',
                 instagram: '@carpet.ninja',
                 tagline: 'Deep Carpet & Upholstery Cleaning, done Ninja-fast.',
-                citiesList: 'San Francisco, San Mateo, San Jose, Palo Alto, Mountain View, Sunnyvale, Fremont, Oakland',
-                // Deprecated cities array removed
-                logo: logoId,
-                favicon: faviconId,
-                beforeAfterImage: beforeAfterId,
-                mapEmbedUrl: 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d253749.89588270477!2d-122.67501791888054!3d37.75781499767964!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x808f7e2a7f2a2a4d%3A0x31d05b0f6e5c1d2!2sSan%20Francisco%20Bay%20Area!5e0!3m2!1sen!2sus!4v1716944550000',
+                cities: [
+                    { name: 'San Francisco' },
+                    { name: 'San Mateo' },
+                    { name: 'San Jose' },
+                    { name: 'Palo Alto' },
+                    { name: 'Mountain View' },
+                    { name: 'Sunnyvale' },
+                    { name: 'Fremont' },
+                    { name: 'Oakland' },
+                ],
             },
         })
 
@@ -257,17 +233,53 @@ async function seedIfEmpty(payload: Payload) {
                     { icon: 'fa-solid fa-truck-fast', text: 'Mobile Service' },
                     { icon: 'fa-solid fa-star', text: '5★ Rated' },
                 ],
+                heroImage: heroImage?.id,
+                logo: logo?.id,
             },
         })
 
+        // Seed BeforeAfter global
+        await payload.updateGlobal({
+            slug: 'before-after',
+            data: {
+                sectionTitle: 'See the Difference',
+                sectionSubtitle: 'Real results from Bay Area homes',
+                comparisons: beforeImage && afterImage ? [
+                    {
+                        title: 'Living Room Carpet',
+                        beforeImage: beforeImage.id,
+                        afterImage: afterImage.id,
+                        description: 'Deep cleaning removed years of dirt and stains',
+                    },
+                ] : [],
+            },
+        })
+
+        // Seed SectionVisibility global
+        await payload.updateGlobal({
+            slug: 'section-visibility',
+            data: {
+                showHero: true,
+                showServices: true,
+                showBeforeAfter: true,
+                showReviews: true,
+                showPricing: true,
+                showCoverage: true,
+                showContact: true,
+                enableBubbles: true,
+                bubbleCount: 15,
+            },
+        })
+
+        // Seed Services with images
         await payload.create({
             collection: 'services',
             data: {
                 title: 'Deep Carpet Cleaning',
                 slug: 'deep-carpet-cleaning',
                 description: 'Hot water extraction with powerful vacuum and edge tools for a wall-to-wall refresh.',
+                image: serviceImages['deep-carpet-cleaning']?.id,
                 order: 1,
-                image: service1ImageId,
             },
         })
 
@@ -277,8 +289,8 @@ async function seedIfEmpty(payload: Payload) {
                 title: 'Upholstery & Mattresses',
                 slug: 'upholstery-mattresses',
                 description: 'Fiber-safe cleaning for sofas, chairs, headboards and mattresses. Allergen reduction included.',
+                image: serviceImages['upholstery-mattresses']?.id,
                 order: 2,
-                image: service2ImageId,
             },
         })
 
@@ -288,8 +300,8 @@ async function seedIfEmpty(payload: Payload) {
                 title: 'Stain & Odor Removal',
                 slug: 'stain-odor-removal',
                 description: 'Targeted treatment for pet accidents, spills, and heavy traffic lanes. UV inspection on request.',
+                image: serviceImages['stain-odor-removal']?.id,
                 order: 3,
-                image: service3ImageId,
             },
         })
 
@@ -327,7 +339,7 @@ async function seedIfEmpty(payload: Payload) {
             },
         })
 
-        // Seed Pricing
+        // Seed Pricing with icons
         await payload.create({
             collection: 'pricing',
             data: {
@@ -341,6 +353,7 @@ async function seedIfEmpty(payload: Payload) {
                     { feature: 'Fast drying' },
                 ],
                 popular: false,
+                icon: 'fa-solid fa-broom',
                 order: 1,
             },
         })
@@ -359,6 +372,7 @@ async function seedIfEmpty(payload: Payload) {
                     { feature: 'UV inspection' },
                 ],
                 popular: true,
+                icon: 'fa-solid fa-star',
                 order: 2,
             },
         })
@@ -377,7 +391,20 @@ async function seedIfEmpty(payload: Payload) {
                     { feature: 'Same-day service' },
                 ],
                 popular: false,
+                icon: 'fa-solid fa-crown',
                 order: 3,
+            },
+        })
+
+        // Seed/Update DevelopmentSettings global
+        await payload.updateGlobal({
+            slug: 'development-settings',
+            data: {
+                isDevelopment: process.env.NODE_ENV !== 'production',
+                allowDataReset: false,
+                forceReseedOnNextStart: false, // Reset flag after seeding
+                lastSeedDate: new Date().toISOString(),
+                seedCount: (devSettings?.seedCount || 0) + 1,
             },
         })
 

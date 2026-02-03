@@ -10,7 +10,7 @@
         "lint": "eslint",
         "test:server": "bash scripts/test-server.sh",
         "test:server:clean": "CLEAN=true bash scripts/test-server.sh",
-        "test:e2e": "CLEAN=true bash scripts/test-server.sh &>/dev/null & sleep 8 && playwright test; pkill -f 'next dev' || true",
+        "test:e2e": "CLEAN=true playwright test",
         "test:e2e:ui": "playwright test --ui"
     },
     "dependencies": {
@@ -39,10 +39,12 @@
         "@types/node": "^20",
         "@types/react": "^19",
         "@types/react-dom": "^19",
+        "cross-env": "^10.1.0",
         "eslint": "^9",
         "eslint-config-next": "16.1.6",
         "playwright": "^1.58.1",
         "tailwindcss": "^4",
+        "tsx": "^4.21.0",
         "typescript": "^5"
     }
 }

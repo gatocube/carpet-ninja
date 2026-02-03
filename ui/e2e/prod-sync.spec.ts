@@ -4,7 +4,11 @@ const BASE_URL = 'https://carpet-ninja.vercel.app'
 const ADMIN_EMAIL = 'admin@carpet-ninja.com'
 const ADMIN_PASSWORD = 'admin123'
 
+// Skip production tests by default (only run when TEST_PRODUCTION=true)
+const shouldSkip = process.env.TEST_PRODUCTION !== 'true'
+
 test.describe('Production Admin Content Sync', () => {
+    test.skip(shouldSkip, 'Skipping production test (set TEST_PRODUCTION=true to run)')
     test('can login, edit hero, and see changes on frontend', async ({ page }) => {
         // Step 1: Login to admin
         await page.goto(`${BASE_URL}/admin/login`)

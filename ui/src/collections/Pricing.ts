@@ -62,5 +62,13 @@ export const Pricing: CollectionConfig = {
                 position: 'sidebar',
             },
         },
+        {
+            name: 'icon',
+            type: 'text',
+            admin: {
+                position: 'sidebar',
+                description: 'Font Awesome icon class (e.g. fa-solid fa-star)',
+            },
+        },
     ],
 }

@@ -18,6 +18,9 @@ import { ContactRequests } from './collections/ContactRequests'
 // Globals
 import { SiteSettings } from './globals/SiteSettings'
 import { Hero } from './globals/Hero'
+import { BeforeAfter } from './globals/BeforeAfter'
+import { SectionVisibility } from './globals/SectionVisibility'
+import { DevelopmentSettings } from './globals/DevelopmentSettings'
 
 // Plugins
 import { seedPlugin } from './plugins/seed'
@@ -71,6 +74,7 @@ const plugins = [
 ]
 
 export default buildConfig({
+    serverURL: process.env.NEXT_PUBLIC_SERVER_URL || (process.env.VERCEL_URL && process.env.VERCEL_URL !== '' ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3445'),
     admin: {
         user: 'users',
         importMap: {
@@ -136,7 +140,7 @@ export default buildConfig({
         Pricing,
         ContactRequests,
     ],
-    globals: [SiteSettings, Hero],
+    globals: [SiteSettings, Hero, BeforeAfter, SectionVisibility, DevelopmentSettings],
     editor: lexicalEditor(),
     secret: process.env.PAYLOAD_SECRET || (isTestMode() ? 'test-secret' : 'dev-secret-change-in-production'),
     typescript: {

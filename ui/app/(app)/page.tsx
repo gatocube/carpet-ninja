@@ -37,7 +37,22 @@ export default async function Home() {
 
             {/* Hero Section */}
             <section id="home" className="relative min-h-screen flex items-center pt-20">
-                <div className="absolute inset-0 z-0 bg-gradient-to-br from-[#0a0a0f] via-pink-500/10 to-indigo-500/5"></div>
+                {/* Bubbles Animation Background */}
+                <div className="bubbles-container">
+                    <div className="bubble bubble-1"></div>
+                    <div className="bubble bubble-2"></div>
+                    <div className="bubble bubble-3"></div>
+                    <div className="bubble bubble-4"></div>
+                    <div className="bubble bubble-5"></div>
+                    <div className="bubble bubble-6"></div>
+                    <div className="bubble bubble-7"></div>
+                    <div className="bubble bubble-8"></div>
+                    <div className="bubble bubble-9"></div>
+                    <div className="bubble bubble-10"></div>
+                    <div className="bubble bubble-11"></div>
+                    <div className="bubble bubble-12"></div>
+                </div>
+
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 py-20 lg:py-28 grid lg:grid-cols-2 items-center gap-12 relative z-10">
                     <div>
                         <div className="inline-flex items-center gap-2 bg-[#1a1b26]/80 border border-white/10 rounded-full px-4 py-2 mb-6">
@@ -69,12 +84,18 @@ export default async function Home() {
                             ))}
                         </div>
                     </div>
-                    <div>
+                    <div className="hero-float">
                         <div className="relative">
                             <div className="absolute inset-0 bg-gradient-to-r from-pink-500/20 to-indigo-500/20 rounded-3xl blur-3xl -z-10"></div>
-                            <img src="/carpet-ninja-car-3.png" alt="Carpet Ninja Van" className="w-full h-auto rounded-3xl shadow-2xl" />
+                            {/* Using object-contain to show full car without cropping, no background rect */}
+                            <img src="/carpet-ninja-car-3.png" alt="Carpet Ninja Van" className="w-full h-auto drop-shadow-2xl" />
                         </div>
                     </div>
+                </div>
+
+                {/* Scroll indicator */}
+                <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-10 animate-bounce">
+                    <i className="fa-solid fa-chevron-down text-white/40"></i>
                 </div>
             </section>
 

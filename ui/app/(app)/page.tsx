@@ -69,10 +69,18 @@ export default async function Home() {
                             <span className="text-sm text-white/80">Now serving Bay Area</span>
                         </div>
                         <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black leading-tight">
-                            {hero.headline?.split(',')[0]},<br />
-                            <span className="bg-gradient-to-r from-pink-500 to-indigo-500 bg-clip-text text-transparent">
-                                {hero.headline?.split(',')[1] || 'done Ninja-fast.'}
-                            </span>
+                            {hero.headline?.includes(',') ? (
+                                <>
+                                    {hero.headline?.split(',')[0]},<br />
+                                    <span className="bg-gradient-to-r from-pink-500 to-indigo-500 bg-clip-text text-transparent">
+                                        {hero.headline?.split(',')[1]}
+                                    </span>
+                                </>
+                            ) : (
+                                <span className="bg-gradient-to-r from-pink-500 to-indigo-500 bg-clip-text text-transparent">
+                                    {hero.headline}
+                                </span>
+                            )}
                         </h1>
                         <p className="mt-6 text-white/70 text-lg leading-relaxed max-w-xl">
                             {hero.subheadline}

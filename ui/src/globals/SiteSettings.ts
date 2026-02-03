@@ -153,20 +153,6 @@ export const SiteSettings: GlobalConfig = {
                                 description: 'List of cities served, separated by commas',
                             },
                         },
-                        // Legacy field - kept for schema compatibility but hidden
-                        {
-                            name: 'cities',
-                            type: 'array',
-                            admin: {
-                                hidden: true,
-                            },
-                            fields: [
-                                {
-                                    name: 'name',
-                                    type: 'text',
-                                },
-                            ],
-                        },
                         {
                             name: 'mapEmbedUrl',
                             label: 'Google Maps Embed URL',

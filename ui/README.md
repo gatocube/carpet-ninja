@@ -46,4 +46,35 @@ NEXT_PUBLIC_SITE_URL=   # Production URL (default: https://carpet-ninja.com)
 
 ## Deployment
 
-Optimized for Vercel deployment. See [Payload CMS Vercel docs](https://payloadcms.com/docs/production/deployment/vercel).
+### Fast Deployment (Recommended)
+
+Use local prebuild + archive upload for 3-5x faster deployments:
+
+```bash
+./scripts/deploy-prod.sh
+```
+
+This workflow:
+1. Pulls latest production env vars
+2. Builds locally with production environment
+3. Deploys pre-built artifacts as compressed archive
+
+**Benefits:**
+- ⚡ Much faster (30-60s vs 1-2min remote builds)
+- 🐛 Catch build errors before deploying
+- 🧪 Test production build locally first
+
+**Manual steps:**
+```bash
+vercel pull --yes --environment=production
+vercel build --prod --yes
+vercel deploy --prebuilt --prod --archive=tgz
+```
+
+### Standard Deployment
+
+```bash
+vercel --prod
+```
+
+See [Payload CMS Vercel docs](https://payloadcms.com/docs/production/deployment/vercel) for more details.

@@ -117,7 +117,7 @@ export default async function Home() {
                         {services.map((service, idx) => (
                             <div key={service.id} className="group bg-[#1a1b26]/70 backdrop-blur-xl border border-white/5 rounded-3xl overflow-hidden shadow-lg hover:shadow-pink-500/20 transition-all hover:-translate-y-2">
                                 <div className="relative overflow-hidden">
-                                    <img src={`/service-${service.slug === 'deep-carpet-cleaning' ? 'deep-carpet-cleaning' : service.slug === 'upholstery-mattresses' ? 'upholstery-mattreses' : 'stain-order-removal'}.png`} alt={service.title} className="w-full h-56 object-cover transition-transform group-hover:scale-110" />
+                                    <img src={service.image?.url || `/service-${service.slug}.png`} alt={service.title} className="w-full h-56 object-cover transition-transform group-hover:scale-110" />
                                     <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0f]/80 to-transparent"></div>
                                 </div>
                                 <div className="p-6">
@@ -166,7 +166,7 @@ export default async function Home() {
                             <div className="relative">
                                 <div className="absolute -inset-4 bg-gradient-to-r from-pink-500/20 via-indigo-500/10 to-cyan-400/20 rounded-3xl blur-2xl -z-10"></div>
                                 <div className="rounded-3xl overflow-hidden border border-white/10 shadow-2xl">
-                                    <img src="/before-after.png" alt="Before and After cleaning comparison" className="w-full h-auto" />
+                                    <img src={settings.beforeAfterImage?.url || '/before-after.png'} alt="Before and After cleaning comparison" className="w-full h-auto" />
                                 </div>
                             </div>
                         </div>
@@ -272,7 +272,7 @@ export default async function Home() {
                                 title="Bay Area Map"
                                 className="w-full h-[400px]"
                                 loading="lazy"
-                                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d253749.89588270477!2d-122.67501791888054!3d37.75781499767964!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x808f7e2a7f2a2a4d%3A0x31d05b0f6e5c1d2!2sSan%20Francisco%20Bay%20Area!5e0!3m2!1sen!2sus!4v1716944550000">
+                                src={settings.mapEmbedUrl || 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d253749.89588270477!2d-122.67501791888054!3d37.75781499767964!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x808f7e2a7f2a2a4d%3A0x31d05b0f6e5c1d2!2sSan%20Francisco%20Bay%20Area!5e0!3m2!1sen!2sus!4v1716944550000'}>
                             </iframe>
                         </div>
                     </div>

@@ -12,9 +12,9 @@ export async function getPayloadClient() {
 
 // Default fallback data for build time
 const fallbackServices = [
-    { id: '1', title: 'Deep Carpet Cleaning', slug: 'deep-carpet-cleaning', description: 'Professional deep cleaning for all carpet types.' },
-    { id: '2', title: 'Upholstery & Mattresses', slug: 'upholstery-mattresses', description: 'Refresh your furniture and mattresses.' },
-    { id: '3', title: 'Stain & Odor Removal', slug: 'stain-odor-removal', description: 'Eliminate tough stains and odors.' },
+    { id: '1', title: 'Deep Carpet Cleaning', slug: 'deep-carpet-cleaning', description: 'Professional deep cleaning for all carpet types.', image: null as { url?: string } | null },
+    { id: '2', title: 'Upholstery & Mattresses', slug: 'upholstery-mattresses', description: 'Refresh your furniture and mattresses.', image: null as { url?: string } | null },
+    { id: '3', title: 'Stain & Odor Removal', slug: 'stain-odor-removal', description: 'Eliminate tough stains and odors.', image: null as { url?: string } | null },
 ]
 
 const fallbackReviews = [
@@ -74,6 +74,10 @@ export async function getSiteSettings() {
             instagram: '@carpet.ninja',
             tagline: 'Deep Carpet & Upholstery Cleaning, done Ninja-fast.',
             cities: [{ name: 'San Francisco' }, { name: 'Oakland' }, { name: 'San Jose' }],
+            logo: null as { url?: string } | null,
+            favicon: null as { url?: string } | null,
+            beforeAfterImage: null as { url?: string } | null,
+            mapEmbedUrl: 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d253749.89588270477!2d-122.67501791888054!3d37.75781499767964!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x808f7e2a7f2a2a4d%3A0x31d05b0f6e5c1d2!2sSan%20Francisco%20Bay%20Area!5e0!3m2!1sen!2sus!4v1716944550000',
         }
     }
 }

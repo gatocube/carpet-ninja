@@ -230,16 +230,8 @@ async function seedIfEmpty(payload: Payload) {
                 email: 'hello@carpet-ninja.com',
                 instagram: '@carpet.ninja',
                 tagline: 'Deep Carpet & Upholstery Cleaning, done Ninja-fast.',
-                cities: [
-                    { name: 'San Francisco' },
-                    { name: 'San Mateo' },
-                    { name: 'San Jose' },
-                    { name: 'Palo Alto' },
-                    { name: 'Mountain View' },
-                    { name: 'Sunnyvale' },
-                    { name: 'Fremont' },
-                    { name: 'Oakland' },
-                ],
+                citiesList: 'San Francisco, San Mateo, San Jose, Palo Alto, Mountain View, Sunnyvale, Fremont, Oakland',
+                // Deprecated cities array removed
                 logo: logoId,
                 favicon: faviconId,
                 beforeAfterImage: beforeAfterId,

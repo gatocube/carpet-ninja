@@ -20,6 +20,11 @@ playwright-report/
 blob-report/
 playwright/.cache/
 
+# Database backups
+backups/
+*.sql
+*.sql.gz
+
 # Environment
 .env
 .env.local

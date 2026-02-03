@@ -1,5 +1,9 @@
 import { getServices, getReviews, getPricing, getSiteSettings, getHero } from '@/lib/payload'
 
+// Enable dynamic rendering - content updates immediately when edited in admin
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
+
 export default async function Home() {
     const [services, reviews, pricing, settings, hero] = await Promise.all([
         getServices(),

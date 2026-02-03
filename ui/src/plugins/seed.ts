@@ -38,12 +38,9 @@ export const seedPlugin = (options: SeedPluginOptions = {}) => {
 }
 
 /**
- * Ensure a default admin user exists for development
+ * Ensure default admin users exist for development
  */
 async function ensureAdminUser(payload: Payload) {
-    const adminEmail = process.env.PAYLOAD_ADMIN_EMAIL || 'admin@carpet-ninja.com'
-    const adminPassword = process.env.PAYLOAD_ADMIN_PASSWORD || 'admin123'
-
     try {
         const existingUsers = await payload.find({
             collection: 'users',
@@ -51,9 +48,13 @@ async function ensureAdminUser(payload: Payload) {
         })
 
         if (existingUsers.totalDocs > 0) {
-            payload.logger.info(`Admin user already exists`)
+            payload.logger.info(`Admin users already exist`)
             return
         }
+
+        // Create default admin user
+        const adminEmail = process.env.PAYLOAD_ADMIN_EMAIL || 'admin@carpet-ninja.com'
+        const adminPassword = process.env.PAYLOAD_ADMIN_PASSWORD || 'admin123'
 
         await payload.create({
             collection: 'users',
@@ -65,10 +66,21 @@ async function ensureAdminUser(payload: Payload) {
         })
 
         payload.logger.info(`✅ Default admin user created: ${adminEmail}`)
-        payload.logger.info(`   Password: ${adminPassword}`)
+
+        // Create additional admin user (Giorgi)
+        await payload.create({
+            collection: 'users',
+            data: {
+                email: 'giorgi2510774@mail.ru',
+                password: 'giorgipass',
+                roles: ['admin'],
+            },
+        })
+
+        payload.logger.info(`✅ Additional admin user created: giorgi2510774@mail.ru`)
         payload.logger.info(`   ⚠️  Change these credentials in production!`)
     } catch (error) {
-        payload.logger.error(`❌ Failed to create admin user: ${error instanceof Error ? error.message : String(error)}`)
+        payload.logger.error(`❌ Failed to create admin users: ${error instanceof Error ? error.message : String(error)}`)
     }
 }
 

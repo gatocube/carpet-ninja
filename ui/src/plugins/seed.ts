@@ -162,13 +162,19 @@ async function seedIfEmpty(payload: Payload) {
     let service3ImageId: number | null = null
 
     if (needsImages) {
-        payload.logger.info('Uploading images...')
-        logoId = await uploadImage(payload, 'carpet-ninja.png', 'Carpet Ninja Logo')
-        faviconId = await uploadImage(payload, 'favicon.png', 'Favicon')
-        beforeAfterId = await uploadImage(payload, 'before-after.png', 'Before and After Cleaning')
-        service1ImageId = await uploadImage(payload, 'service-deep-carpet-cleaning.png', 'Deep Carpet Cleaning')
-        service2ImageId = await uploadImage(payload, 'service-upholstery-mattresses.png', 'Upholstery and Mattresses')
-        service3ImageId = await uploadImage(payload, 'service-stain-odor-removal.png', 'Stain and Odor Removal')
+        // In production without Blob Storage, we shouldn't upload images because they will disappear (ephemeral FS)
+        // If we skip upload, the frontend will fallback to hardcoded public assets which works fine.
+        if (process.env.NODE_ENV === 'production' && !process.env.BLOB_READ_WRITE_TOKEN) {
+            payload.logger.warn('⚠️  Production detected without BLOB_READ_WRITE_TOKEN. Skipping image uploads to avoid ephemeral storage 404s.')
+        } else {
+            payload.logger.info('Uploading images...')
+            logoId = await uploadImage(payload, 'carpet-ninja.png', 'Carpet Ninja Logo')
+            faviconId = await uploadImage(payload, 'favicon.png', 'Favicon')
+            beforeAfterId = await uploadImage(payload, 'before-after.png', 'Before and After Cleaning')
+            service1ImageId = await uploadImage(payload, 'service-deep-carpet-cleaning.png', 'Deep Carpet Cleaning')
+            service2ImageId = await uploadImage(payload, 'service-upholstery-mattresses.png', 'Upholstery and Mattresses')
+            service3ImageId = await uploadImage(payload, 'service-stain-odor-removal.png', 'Stain and Odor Removal')
+        }
 
         // Update site settings with images
         await payload.updateGlobal({

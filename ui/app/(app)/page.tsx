@@ -84,12 +84,8 @@ export default async function Home() {
                             ))}
                         </div>
                     </div>
-                    <div className="hero-float">
-                        <div className="relative">
-                            <div className="absolute inset-0 bg-gradient-to-r from-pink-500/20 to-indigo-500/20 rounded-3xl blur-3xl -z-10"></div>
-                            {/* Using object-contain to show full car without cropping, no background rect */}
-                            <img src="/carpet-ninja-car-3.png" alt="Carpet Ninja Van" className="w-full h-auto drop-shadow-2xl" />
-                        </div>
+                    <div>
+                        <img src="/carpet-ninja-car-3.png" alt="Carpet Ninja Van" className="w-full h-auto" />
                     </div>
                 </div>
 

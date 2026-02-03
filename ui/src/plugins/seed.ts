@@ -159,7 +159,7 @@ async function seedIfEmpty(payload: Payload) {
         devSettings = await payload.findGlobal({ slug: 'development-settings' })
         shouldForceReseed = devSettings?.forceReseedOnNextStart === true
         
-        if (shouldForceReseed && devSettings?.isDevelopment) {
+        if (shouldForceReseed) {
             payload.logger.warn('🔄 FORCE RESEED ENABLED - Clearing all data...')
             
             // Delete all data from collections

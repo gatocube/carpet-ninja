@@ -9,6 +9,9 @@ const PROD_URL = process.env.PROD_URL || 'https://carpet-ninja.vercel.app'
 const ADMIN_EMAIL = process.env.ADMIN_EMAIL || 'alex@carpet-ninja.com'
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'barducks'
 
+// Run tests serially to maintain login session
+test.describe.configure({ mode: 'serial' })
+
 test.describe('Admin Image Management', () => {
     test.beforeEach(async ({ page }) => {
         // Login to admin
@@ -80,7 +83,15 @@ test.describe('Admin Image Management', () => {
         await page.waitForLoadState('networkidle')
         await page.waitForTimeout(1000)
 
-        // Check URL is correct
+        // Handle redirect to login (session might not persist)
+        if (page.url().includes('login')) {
+            await page.fill('input[name="email"]', ADMIN_EMAIL)
+            await page.fill('input[name="password"]', ADMIN_PASSWORD)
+            await page.click('button[type="submit"]')
+            await page.waitForURL(/\/admin\/collections\/media/, { timeout: 30000 })
+        }
+
+        // Now verify we're on media page
         expect(page.url()).toContain('/admin/collections/media')
 
         // Check we're on media page - look for create/upload button or empty state

@@ -17,6 +17,8 @@ import { ContactRequests } from './collections/ContactRequests'
 // Globals
 import { SiteSettings } from './globals/SiteSettings'
 import { Hero } from './globals/Hero'
+import { BeforeAfter } from './globals/BeforeAfter'
+import { SectionVisibility } from './globals/SectionVisibility'
 
 // Plugins
 import { seedPlugin } from './plugins/seed'
@@ -112,7 +114,7 @@ export default buildConfig({
         Pricing,
         ContactRequests,
     ],
-    globals: [SiteSettings, Hero],
+    globals: [SiteSettings, Hero, BeforeAfter, SectionVisibility],
     editor: lexicalEditor(),
     secret: process.env.PAYLOAD_SECRET || (isTestMode() ? 'test-secret' : 'dev-secret-change-in-production'),
     typescript: {

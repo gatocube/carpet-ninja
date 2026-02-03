@@ -45,6 +45,17 @@ export const Hero: GlobalConfig = {
             name: 'heroImage',
             type: 'upload',
             relationTo: 'media',
+            admin: {
+                description: 'Hero section image (recommended: van/truck image with transparent background)',
+            },
+        },
+        {
+            name: 'logo',
+            type: 'upload',
+            relationTo: 'media',
+            admin: {
+                description: 'Company logo (used in header and footer)',
+            },
         },
     ],
 }

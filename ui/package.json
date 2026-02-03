@@ -12,7 +12,9 @@
         "test:server:clean": "CLEAN=true bash scripts/test-server.sh",
         "test:e2e": "CLEAN=true playwright test",
         "test:e2e:ui": "playwright test --ui",
-        "deploy:prod": "bash scripts/deploy-prod.sh"
+        "deploy:prod": "bash scripts/deploy-prod.sh",
+        "payload": "cross-env PAYLOAD_CONFIG_PATH=src/payload.config.ts NODE_OPTIONS=--no-deprecation payload",
+        "ci": "payload migrate && pnpm build"
     },
     "dependencies": {
         "@payloadcms/db-postgres": "^3.74.0",
@@ -37,10 +39,12 @@
         "@types/node": "^20",
         "@types/react": "^19",
         "@types/react-dom": "^19",
+        "cross-env": "^10.1.0",
         "eslint": "^9",
         "eslint-config-next": "16.1.6",
         "playwright": "^1.58.1",
         "tailwindcss": "^4",
+        "tsx": "^4.21.0",
         "typescript": "^5"
     }
 }

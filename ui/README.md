@@ -46,35 +46,41 @@ NEXT_PUBLIC_SITE_URL=   # Production URL (default: https://carpet-ninja.com)
 
 ## Deployment
 
-### Fast Deployment (Recommended)
-
-Use local prebuild + archive upload for 3-5x faster deployments:
-
-```bash
-./scripts/deploy-prod.sh
-```
-
-This workflow:
-1. Pulls latest production env vars
-2. Builds locally with production environment
-3. Deploys pre-built artifacts as compressed archive
-
-**Benefits:**
-- ⚡ Much faster (30-60s vs 1-2min remote builds)
-- 🐛 Catch build errors before deploying
-- 🧪 Test production build locally first
-
-**Manual steps:**
-```bash
-vercel pull --yes --environment=production
-vercel build --prod --yes
-vercel deploy --prebuilt --prod --archive=tgz
-```
-
-### Standard Deployment
+### Standard Deployment (Recommended)
 
 ```bash
 vercel --prod
 ```
+
+Vercel builds remotely with correct native module binaries for linux-arm64.
+
+### Database Initialization
+
+The production PostgreSQL database must be initialized before the first deployment:
+
+1. Pull production environment variables:
+   ```bash
+   vercel pull --yes --environment=production
+   ```
+
+2. Run dev server against production database to initialize schema:
+   ```bash
+   set -a && . .vercel/.env.production.local && set +a && pnpm dev:quick
+   ```
+
+3. Trigger a request to initialize Payload and seed data:
+   ```bash
+   curl http://localhost:3445/
+   ```
+
+4. Stop the dev server and deploy normally:
+   ```bash
+   vercel --prod
+   ```
+
+**Why this approach?**
+- Payload's `push: true` mode auto-creates tables in development
+- Production requires migrations, but initial setup needs tables first
+- Running dev mode once against prod DB creates the schema
 
 See [Payload CMS Vercel docs](https://payloadcms.com/docs/production/deployment/vercel) for more details.

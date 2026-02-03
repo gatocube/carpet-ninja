@@ -6,8 +6,7 @@
 - **GitHub**: https://github.com/gatocube/carpet-ninja
 
 ## Admin Credentials
-- **Email**: `admin@carpet-ninja.com`
-- **Password**: `admin123`
+See `~/kb/secrets.md` for admin login credentials.
 
 ---
 

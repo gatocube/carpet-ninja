@@ -3,27 +3,35 @@
 Professional carpet & upholstery cleaning service website built with Next.js 16 and Payload CMS v3.
 
 ## Tech Stack
-- **Framework**: Next.js 16 (App Router)
+- **Framework**: Next.js 16 (App Router) with Turbopack
 - **CMS**: Payload CMS v3 (Next.js Native)
 - **Styling**: Tailwind CSS v4
 - **Database**: PostgreSQL (production) / SQLite (development)
 - **Storage**: Vercel Blob
 - **Testing**: Playwright E2E
+- **Deployment**: Vercel
 
-## Development
+## Quick Start
 
 ```bash
 # Install dependencies
 pnpm install
 
-# Start dev server (uses SQLite)
-./scripts/dev.sh
-
-# Or with PostgreSQL
-DATABASE_URL=postgres://... pnpm dev
+# Start dev server
+pnpm dev
 ```
 
-Dev server runs at http://localhost:3445
+**That's it!** Server runs at http://localhost:3445
+
+- Admin panel: http://localhost:3445/admin
+- Default credentials: `admin@carpet-ninja.com` / `admin123`
+
+## Documentation
+
+- **[Local Development Guide](docs/LOCAL-DEVELOPMENT.md)** - Complete setup, common issues, workflows
+- **[Production Debugging Guide](docs/DEBUGGING-PRODUCTION.md)** - Debug strategies, log analysis, rollback procedures
+- **[Database Migrations Guide](docs/MIGRATIONS.md)** - Schema changes, backups, reset procedures
+- **[Session Findings](docs/SESSION-FINDINGS.md)** - Technical decisions, issues discovered, caveats
 
 ## Testing
 
@@ -109,3 +117,37 @@ The production PostgreSQL database must be initialized before the first deployme
 - Running dev mode once against prod DB creates the schema
 
 See [Payload CMS Vercel docs](https://payloadcms.com/docs/production/deployment/vercel) for more details.
+
+## Project Structure
+
+```
+carpet-ninja/ui/
+├── app/                    # Next.js App Router
+│   ├── (app)/             # Public website
+│   └── (payload)/         # CMS admin + API
+├── src/
+│   ├── collections/       # Payload collections
+│   ├── globals/          # Payload globals
+│   ├── plugins/          # Payload plugins
+│   └── payload.config.ts # Main config
+├── lib/                   # Shared utilities
+├── e2e/                   # E2E tests
+├── scripts/              # Helper scripts
+└── docs/                 # Documentation
+```
+
+## Admin Credentials (Development)
+
+```
+Email: admin@carpet-ninja.com
+Password: admin123
+```
+
+⚠️ **Change these before production use!**
+
+## Production
+
+**Live Site**: https://carpet-ninja.vercel.app/
+**Admin Panel**: https://carpet-ninja.vercel.app/admin
+
+See [docs/DEBUGGING-PRODUCTION.md](docs/DEBUGGING-PRODUCTION.md) for monitoring and troubleshooting.

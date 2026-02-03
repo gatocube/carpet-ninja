@@ -11,10 +11,7 @@
         "test:server": "bash scripts/test-server.sh",
         "test:server:clean": "CLEAN=true bash scripts/test-server.sh",
         "test:e2e": "CLEAN=true playwright test",
-        "test:e2e:ui": "playwright test --ui",
-        "deploy:prod": "bash scripts/deploy-prod.sh",
-        "payload": "cross-env PAYLOAD_CONFIG_PATH=src/payload.config.ts NODE_OPTIONS=--no-deprecation payload",
-        "ci": "payload migrate && pnpm build"
+        "test:e2e:ui": "playwright test --ui"
     },
     "dependencies": {
         "@payloadcms/db-postgres": "^3.74.0",

@@ -1,10 +1,48 @@
 import type { Payload, Config } from 'payload'
+import fs from 'fs'
+import path from 'path'
 
 interface SeedPluginOptions {
     /**
      * Whether to run seeding in production (default: false)
      */
     runInProduction?: boolean
+}
+
+/**
+ * Helper to upload an image from the public folder to Media collection
+ */
+async function uploadImage(payload: Payload, filename: string, alt: string): Promise<number | null> {
+    try {
+        const publicDir = path.join(process.cwd(), 'public')
+        const filePath = path.join(publicDir, filename)
+
+        if (!fs.existsSync(filePath)) {
+            payload.logger.warn(`Image not found: ${filePath}`)
+            return null
+        }
+
+        const fileBuffer = fs.readFileSync(filePath)
+
+        const mediaDoc = await payload.create({
+            collection: 'media',
+            data: {
+                alt: alt,
+            },
+            file: {
+                data: fileBuffer,
+                name: filename,
+                mimetype: filename.endsWith('.png') ? 'image/png' : 'image/jpeg',
+                size: fileBuffer.length,
+            },
+        })
+
+        payload.logger.info(`✅ Uploaded image: ${filename}`)
+        return mediaDoc.id as number
+    } catch (error) {
+        payload.logger.error(`❌ Failed to upload ${filename}: ${error instanceof Error ? error.message : String(error)}`)
+        return null
+    }
 }
 
 /**
@@ -88,7 +126,16 @@ async function seedIfEmpty(payload: Payload) {
     payload.logger.info('Seeding initial data...')
 
     try {
-        // Seed SiteSettings global
+        // Upload images first
+        payload.logger.info('Uploading images...')
+        const logoId = await uploadImage(payload, 'carpet-ninja.png', 'Carpet Ninja Logo')
+        const faviconId = await uploadImage(payload, 'favicon.png', 'Favicon')
+        const beforeAfterId = await uploadImage(payload, 'before-after.png', 'Before and After Cleaning')
+        const service1ImageId = await uploadImage(payload, 'service-deep-carpet-cleaning.png', 'Deep Carpet Cleaning')
+        const service2ImageId = await uploadImage(payload, 'service-upholstery-mattresses.png', 'Upholstery and Mattresses')
+        const service3ImageId = await uploadImage(payload, 'service-stain-odor-removal.png', 'Stain and Odor Removal')
+
+        // Seed SiteSettings global with images
         await payload.updateGlobal({
             slug: 'site-settings',
             data: {
@@ -106,6 +153,10 @@ async function seedIfEmpty(payload: Payload) {
                     { name: 'Fremont' },
                     { name: 'Oakland' },
                 ],
+                logo: logoId,
+                favicon: faviconId,
+                beforeAfterImage: beforeAfterId,
+                mapEmbedUrl: 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d253749.89588270477!2d-122.67501791888054!3d37.75781499767964!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x808f7e2a7f2a2a4d%3A0x31d05b0f6e5c1d2!2sSan%20Francisco%20Bay%20Area!5e0!3m2!1sen!2sus!4v1716944550000',
             },
         })
 
@@ -124,7 +175,6 @@ async function seedIfEmpty(payload: Payload) {
             },
         })
 
-        // Seed Services
         await payload.create({
             collection: 'services',
             data: {
@@ -132,6 +182,7 @@ async function seedIfEmpty(payload: Payload) {
                 slug: 'deep-carpet-cleaning',
                 description: 'Hot water extraction with powerful vacuum and edge tools for a wall-to-wall refresh.',
                 order: 1,
+                image: service1ImageId,
             },
         })
 
@@ -142,6 +193,7 @@ async function seedIfEmpty(payload: Payload) {
                 slug: 'upholstery-mattresses',
                 description: 'Fiber-safe cleaning for sofas, chairs, headboards and mattresses. Allergen reduction included.',
                 order: 2,
+                image: service2ImageId,
             },
         })
 
@@ -152,6 +204,7 @@ async function seedIfEmpty(payload: Payload) {
                 slug: 'stain-odor-removal',
                 description: 'Targeted treatment for pet accidents, spills, and heavy traffic lanes. UV inspection on request.',
                 order: 3,
+                image: service3ImageId,
             },
         })
 

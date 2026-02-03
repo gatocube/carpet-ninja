@@ -43,17 +43,18 @@ export async function POST() {
                 }
             }
 
-            // Create cities table if it doesn't exist
+            // Drop and recreate cities table with correct schema
             try {
+                await client.query('DROP TABLE IF EXISTS site_settings_cities CASCADE')
                 await client.query(`
-                    CREATE TABLE IF NOT EXISTS site_settings_cities (
-                        id SERIAL PRIMARY KEY,
+                    CREATE TABLE site_settings_cities (
+                        id TEXT PRIMARY KEY DEFAULT gen_random_uuid()::text,
                         _order INTEGER NOT NULL DEFAULT 0,
                         _parent_id INTEGER NOT NULL,
                         name VARCHAR(255) NOT NULL
                     )
                 `)
-                migrations.push('Created site_settings_cities table')
+                migrations.push('Created site_settings_cities table with correct schema')
             } catch (err) {
                 errors.push(`Cities table: ${err instanceof Error ? err.message : 'unknown error'}`)
             }

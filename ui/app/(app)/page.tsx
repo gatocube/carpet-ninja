@@ -45,17 +45,29 @@ export default async function Home() {
                 {/* Floating Bubbles Animation */}
                 {visibility?.enableBubbles && (
                     <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
-                        {[...Array(visibility.bubbleCount || 15)].map((_, i) => (
+                        {[
+                            { left: '10%', top: '20%', size: 40, anim: 'float-1' },
+                            { left: '20%', top: '60%', size: 65, anim: 'float-2' },
+                            { left: '30%', top: '10%', size: 30, anim: 'float-3' },
+                            { left: '40%', top: '80%', size: 55, anim: 'float-4' },
+                            { left: '50%', top: '30%', size: 75, anim: 'float-5' },
+                            { left: '60%', top: '70%', size: 45, anim: 'float-6' },
+                            { left: '70%', top: '15%', size: 60, anim: 'float-7' },
+                            { left: '80%', top: '50%', size: 35, anim: 'float-8' },
+                            { left: '90%', top: '25%', size: 70, anim: 'float-9' },
+                            { left: '15%', top: '85%', size: 40, anim: 'float-10' },
+                            { left: '25%', top: '40%', size: 50, anim: 'float-11' },
+                            { left: '35%', top: '5%', size: 65, anim: 'float-12' },
+                        ].slice(0, Math.min(visibility.bubbleCount || 12, 12)).map((bubble, i) => (
                             <div
                                 key={i}
-                                className="absolute rounded-full bg-white/5 backdrop-blur-sm animate-float"
+                                className="bubble"
                                 style={{
-                                    width: `${Math.random() * 80 + 40}px`,
-                                    height: `${Math.random() * 80 + 40}px`,
-                                    left: `${Math.random() * 100}%`,
-                                    top: `${Math.random() * 100}%`,
-                                    animationDelay: `${Math.random() * 5}s`,
-                                    animationDuration: `${Math.random() * 10 + 15}s`,
+                                    width: `${bubble.size}px`,
+                                    height: `${bubble.size}px`,
+                                    left: bubble.left,
+                                    top: bubble.top,
+                                    animation: `${bubble.anim} 25s ease-in-out infinite`,
                                 }}
                             />
                         ))}
@@ -103,8 +115,8 @@ export default async function Home() {
                     </div>
                     <div>
                         <div className="relative">
-                            <div className="absolute inset-0 bg-gradient-to-r from-pink-500/20 to-indigo-500/20 rounded-3xl blur-3xl -z-10"></div>
-                            <img src="/carpet-ninja-car-3.png" alt="Carpet Ninja Van" className="w-full h-auto rounded-3xl shadow-2xl" />
+                            <div className="absolute inset-0 bg-gradient-to-r from-pink-500/20 to-indigo-500/20 blur-3xl"></div>
+                            <img src="/carpet-ninja-car-3.png" alt="Carpet Ninja Van" className="relative w-full h-auto" style={{ filter: 'drop-shadow(0 25px 50px rgba(0,0,0,0.5))' }} />
                         </div>
                     </div>
                 </div>

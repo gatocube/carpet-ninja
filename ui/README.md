@@ -29,8 +29,10 @@ pnpm dev
 ## Documentation
 
 - **[Local Development Guide](docs/LOCAL-DEVELOPMENT.md)** - Complete setup, common issues, workflows
+- **[Development Mode Guide](docs/DEVELOPMENT-MODE.md)** - Safe database resets, force reseed, testing workflows
 - **[Production Debugging Guide](docs/DEBUGGING-PRODUCTION.md)** - Debug strategies, log analysis, rollback procedures
 - **[Database Migrations Guide](docs/MIGRATIONS.md)** - Schema changes, backups, reset procedures
+- **[Git Workflow Guide](docs/GIT-WORKFLOW.md)** - Branch strategy, deployment process, rollback
 - **[Session Findings](docs/SESSION-FINDINGS.md)** - Technical decisions, issues discovered, caveats
 
 ## Testing

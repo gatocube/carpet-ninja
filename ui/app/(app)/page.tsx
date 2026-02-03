@@ -1,16 +1,18 @@
-import { getServices, getReviews, getPricing, getSiteSettings, getHero } from '@/lib/payload'
+import { getServices, getReviews, getPricing, getSiteSettings, getHero, getBeforeAfter, getSectionVisibility } from '@/lib/payload'
 
 // Enable dynamic rendering - content updates immediately when edited in admin
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
 
 export default async function Home() {
-    const [services, reviews, pricing, settings, hero] = await Promise.all([
+    const [services, reviews, pricing, settings, hero, beforeAfter, visibility] = await Promise.all([
         getServices(),
         getReviews(),
         getPricing(),
         getSiteSettings(),
         getHero(),
+        getBeforeAfter(),
+        getSectionVisibility(),
     ])
 
     return (
@@ -36,8 +38,30 @@ export default async function Home() {
             </header>
 
             {/* Hero Section */}
-            <section id="home" className="relative min-h-screen flex items-center pt-20">
+            {visibility?.showHero !== false && (
+            <section id="home" className="relative min-h-screen flex items-center pt-20 overflow-hidden">
                 <div className="absolute inset-0 z-0 bg-gradient-to-br from-[#0a0a0f] via-pink-500/10 to-indigo-500/5"></div>
+                
+                {/* Floating Bubbles Animation */}
+                {visibility?.enableBubbles && (
+                    <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
+                        {[...Array(visibility.bubbleCount || 15)].map((_, i) => (
+                            <div
+                                key={i}
+                                className="absolute rounded-full bg-white/5 backdrop-blur-sm animate-float"
+                                style={{
+                                    width: `${Math.random() * 80 + 40}px`,
+                                    height: `${Math.random() * 80 + 40}px`,
+                                    left: `${Math.random() * 100}%`,
+                                    top: `${Math.random() * 100}%`,
+                                    animationDelay: `${Math.random() * 5}s`,
+                                    animationDuration: `${Math.random() * 10 + 15}s`,
+                                }}
+                            />
+                        ))}
+                    </div>
+                )}
+                
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 py-20 lg:py-28 grid lg:grid-cols-2 items-center gap-12 relative z-10">
                     <div>
                         <div className="inline-flex items-center gap-2 bg-[#1a1b26]/80 border border-white/10 rounded-full px-4 py-2 mb-6">
@@ -77,6 +101,7 @@ export default async function Home() {
                     </div>
                 </div>
             </section>
+            )}
 
             {/* Trust Bar */}
             <section className="py-8 border-y border-white/5 bg-[#1a1b26]/40">
@@ -89,6 +114,7 @@ export default async function Home() {
             </section>
 
             {/* Services Section */}
+            {visibility?.showServices !== false && (
             <section id="services" className="py-24">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6">
                     <div className="text-center mb-16">
@@ -97,10 +123,12 @@ export default async function Home() {
                         <p className="text-white/60 mt-4">Professional equipment • Trained techs • Pet-safe solutions</p>
                     </div>
                     <div className="grid md:grid-cols-3 gap-8">
-                        {services.map((service, idx) => (
+                        {services.map((service: any, idx) => {
+                            const imageUrl = service.image?.url || `/service-${service.slug === 'deep-carpet-cleaning' ? 'deep-carpet-cleaning' : service.slug === 'upholstery-mattresses' ? 'upholstery-mattreses' : 'stain-order-removal'}.png`
+                            return (
                             <div key={service.id} className="group bg-[#1a1b26]/70 backdrop-blur-xl border border-white/5 rounded-3xl overflow-hidden shadow-lg hover:shadow-pink-500/20 transition-all hover:-translate-y-2">
                                 <div className="relative overflow-hidden">
-                                    <img src={`/service-${service.slug === 'deep-carpet-cleaning' ? 'deep-carpet-cleaning' : service.slug === 'upholstery-mattresses' ? 'upholstery-mattreses' : 'stain-order-removal'}.png`} alt={service.title} className="w-full h-56 object-cover transition-transform group-hover:scale-110" />
+                                    <img src={imageUrl} alt={service.title} className="w-full h-56 object-cover transition-transform group-hover:scale-110" />
                                     <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0f]/80 to-transparent"></div>
                                 </div>
                                 <div className="p-6">
@@ -108,12 +136,52 @@ export default async function Home() {
                                     <p className="text-white/60 leading-relaxed">{service.description}</p>
                                 </div>
                             </div>
+                        )})}
+                    </div>
+                </div>
+            </section>
+            )}
+
+            {/* Before/After Section */}
+            {visibility?.showBeforeAfter !== false && beforeAfter?.comparisons && beforeAfter.comparisons.length > 0 && (
+            <section id="before-after" className="py-24 bg-[#1a1b26]/30">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6">
+                    <div className="text-center mb-16">
+                        <span className="inline-block text-indigo-500 text-sm font-semibold tracking-wider uppercase mb-4">Real Results</span>
+                        <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black">
+                            {beforeAfter.sectionTitle || 'See the'} <span className="bg-gradient-to-r from-pink-500 to-indigo-500 bg-clip-text text-transparent">Difference</span>
+                        </h2>
+                        <p className="text-white/60 mt-4">{beforeAfter.sectionSubtitle || 'Real results from Bay Area homes'}</p>
+                    </div>
+                    <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                        {beforeAfter.comparisons.map((comp: any, idx: number) => (
+                            <div key={idx} className="group bg-[#1a1b26]/70 backdrop-blur-xl border border-white/5 rounded-3xl overflow-hidden shadow-lg hover:shadow-indigo-500/20 transition-all hover:-translate-y-2">
+                                <div className="relative overflow-hidden">
+                                    <div className="grid grid-cols-2 gap-1">
+                                        <div className="relative">
+                                            <img src={comp.beforeImage?.url || '/before.png'} alt={`${comp.title} - Before`} className="w-full h-56 object-cover" />
+                                            <div className="absolute bottom-2 left-2 bg-[#0a0a0f]/80 px-3 py-1 rounded-full text-xs font-semibold">Before</div>
+                                        </div>
+                                        <div className="relative">
+                                            <img src={comp.afterImage?.url || '/after.png'} alt={`${comp.title} - After`} className="w-full h-56 object-cover" />
+                                            <div className="absolute bottom-2 right-2 bg-gradient-to-r from-pink-500 to-indigo-500 px-3 py-1 rounded-full text-xs font-semibold">After</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className="p-6">
+                                    <h3 className="font-bold text-xl mb-2">{comp.title}</h3>
+                                    {comp.description && <p className="text-white/60 text-sm leading-relaxed">{comp.description}</p>}
+                                </div>
+                            </div>
                         ))}
                     </div>
                 </div>
             </section>
+            )}
 
             {/* Reviews Section */}
+            {visibility?.showReviews !== false && (
+            <section id="reviews" className="py-24 bg-[#1a1b26]/30">
             <section id="reviews" className="py-24 bg-[#1a1b26]/30">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6">
                     <div className="text-center mb-16">
@@ -140,8 +208,11 @@ export default async function Home() {
                     </div>
                 </div>
             </section>
+            )}
 
             {/* Pricing Section */}
+            {visibility?.showPricing !== false && (
+            <section id="pricing" className="py-24">
             <section id="pricing" className="py-24">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6">
                     <div className="text-center mb-16">
@@ -180,8 +251,11 @@ export default async function Home() {
                     </div>
                 </div>
             </section>
+            )}
 
             {/* Coverage Section */}
+            {visibility?.showCoverage !== false && (
+            <section id="coverage" className="py-24 bg-[#1a1b26]/40 border-y border-white/5">
             <section id="coverage" className="py-24 bg-[#1a1b26]/40 border-y border-white/5">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6">
                     <div className="grid lg:grid-cols-2 gap-12 items-center">
@@ -208,8 +282,11 @@ export default async function Home() {
                     </div>
                 </div>
             </section>
+            )}
 
             {/* Contact Section */}
+            {visibility?.showContact !== false && (
+            <section id="contact" className="py-24">
             <section id="contact" className="py-24">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6">
                     <div className="grid lg:grid-cols-2 gap-12 items-start">
@@ -253,6 +330,7 @@ export default async function Home() {
                     </div>
                 </div>
             </section>
+            )}
 
             {/* Footer */}
             <footer className="border-t border-white/5 bg-[#0a0a0f]">

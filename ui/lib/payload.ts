@@ -92,3 +92,37 @@ export async function getHero() {
         }
     }
 }
+
+// Fetch before/after gallery
+export async function getBeforeAfter() {
+    try {
+        const payload = await getPayloadClient()
+        return await payload.findGlobal({ slug: 'before-after' })
+    } catch {
+        return {
+            sectionTitle: 'See the Difference',
+            sectionSubtitle: 'Real results from Bay Area homes',
+            comparisons: [],
+        }
+    }
+}
+
+// Fetch section visibility settings
+export async function getSectionVisibility() {
+    try {
+        const payload = await getPayloadClient()
+        return await payload.findGlobal({ slug: 'section-visibility' })
+    } catch {
+        return {
+            showHero: true,
+            showServices: true,
+            showBeforeAfter: true,
+            showReviews: true,
+            showPricing: true,
+            showCoverage: true,
+            showContact: true,
+            enableBubbles: true,
+            bubbleCount: 15,
+        }
+    }
+}

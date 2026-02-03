@@ -1,4 +1,6 @@
 import type { Payload, Config } from 'payload'
+import fs from 'fs'
+import path from 'path'
 
 interface SeedPluginOptions {
     /**
@@ -70,6 +72,42 @@ async function ensureAdminUser(payload: Payload) {
     }
 }
 
+/**
+ * Helper function to upload an image from public folder to media collection
+ */
+async function uploadImageToMedia(payload: Payload, imagePath: string, alt: string) {
+    try {
+        const fullPath = path.join(process.cwd(), 'public', imagePath)
+        
+        if (!fs.existsSync(fullPath)) {
+            payload.logger.warn(`Image not found: ${fullPath}`)
+            return null
+        }
+
+        const buffer = fs.readFileSync(fullPath)
+        const filename = path.basename(imagePath)
+
+        const media = await payload.create({
+            collection: 'media',
+            data: {
+                alt,
+            },
+            file: {
+                data: buffer,
+                mimetype: `image/${path.extname(imagePath).slice(1)}`,
+                name: filename,
+                size: buffer.length,
+            },
+        })
+
+        payload.logger.info(`✅ Uploaded image: ${filename}`)
+        return media
+    } catch (error) {
+        payload.logger.error(`❌ Failed to upload ${imagePath}: ${error instanceof Error ? error.message : String(error)}`)
+        return null
+    }
+}
+
 async function seedIfEmpty(payload: Payload) {
     // Always ensure admin user exists
     await ensureAdminUser(payload)
@@ -93,6 +131,20 @@ async function seedIfEmpty(payload: Payload) {
     payload.logger.info('Seeding initial data...')
 
     try {
+        // Upload default images to media collection
+        payload.logger.info('📸 Uploading default images...')
+        
+        const heroImage = await uploadImageToMedia(payload, 'carpet-ninja-car-3.png', 'Carpet Ninja Van')
+        const logo = await uploadImageToMedia(payload, 'carpet-ninja.png', 'Carpet Ninja Logo')
+        
+        const serviceImages = {
+            'deep-carpet-cleaning': await uploadImageToMedia(payload, 'service-deep-carpet-cleaning.png', 'Deep Carpet Cleaning Service'),
+            'upholstery-mattresses': await uploadImageToMedia(payload, 'service-upholstery-mattreses.png', 'Upholstery and Mattress Cleaning'),
+            'stain-odor-removal': await uploadImageToMedia(payload, 'service-stain-order-removal.png', 'Stain and Odor Removal Service'),
+        }
+        
+        const beforeImage = await uploadImageToMedia(payload, 'before.png', 'Before Cleaning')
+        const afterImage = await uploadImageToMedia(payload, 'after.png', 'After Cleaning')
         // Seed SiteSettings global
         await payload.updateGlobal({
             slug: 'site-settings',
@@ -126,16 +178,52 @@ async function seedIfEmpty(payload: Payload) {
                     { icon: 'fa-solid fa-truck-fast', text: 'Mobile Service' },
                     { icon: 'fa-solid fa-star', text: '5★ Rated' },
                 ],
+                heroImage: heroImage?.id,
+                logo: logo?.id,
             },
         })
 
-        // Seed Services
+        // Seed BeforeAfter global
+        await payload.updateGlobal({
+            slug: 'before-after',
+            data: {
+                sectionTitle: 'See the Difference',
+                sectionSubtitle: 'Real results from Bay Area homes',
+                comparisons: beforeImage && afterImage ? [
+                    {
+                        title: 'Living Room Carpet',
+                        beforeImage: beforeImage.id,
+                        afterImage: afterImage.id,
+                        description: 'Deep cleaning removed years of dirt and stains',
+                    },
+                ] : [],
+            },
+        })
+
+        // Seed SectionVisibility global
+        await payload.updateGlobal({
+            slug: 'section-visibility',
+            data: {
+                showHero: true,
+                showServices: true,
+                showBeforeAfter: true,
+                showReviews: true,
+                showPricing: true,
+                showCoverage: true,
+                showContact: true,
+                enableBubbles: true,
+                bubbleCount: 15,
+            },
+        })
+
+        // Seed Services with images
         await payload.create({
             collection: 'services',
             data: {
                 title: 'Deep Carpet Cleaning',
                 slug: 'deep-carpet-cleaning',
                 description: 'Hot water extraction with powerful vacuum and edge tools for a wall-to-wall refresh.',
+                image: serviceImages['deep-carpet-cleaning']?.id,
                 order: 1,
             },
         })
@@ -146,6 +234,7 @@ async function seedIfEmpty(payload: Payload) {
                 title: 'Upholstery & Mattresses',
                 slug: 'upholstery-mattresses',
                 description: 'Fiber-safe cleaning for sofas, chairs, headboards and mattresses. Allergen reduction included.',
+                image: serviceImages['upholstery-mattresses']?.id,
                 order: 2,
             },
         })
@@ -156,6 +245,7 @@ async function seedIfEmpty(payload: Payload) {
                 title: 'Stain & Odor Removal',
                 slug: 'stain-odor-removal',
                 description: 'Targeted treatment for pet accidents, spills, and heavy traffic lanes. UV inspection on request.',
+                image: serviceImages['stain-odor-removal']?.id,
                 order: 3,
             },
         })
@@ -194,7 +284,7 @@ async function seedIfEmpty(payload: Payload) {
             },
         })
 
-        // Seed Pricing
+        // Seed Pricing with icons
         await payload.create({
             collection: 'pricing',
             data: {
@@ -208,6 +298,7 @@ async function seedIfEmpty(payload: Payload) {
                     { feature: 'Fast drying' },
                 ],
                 popular: false,
+                icon: 'fa-solid fa-broom',
                 order: 1,
             },
         })
@@ -226,6 +317,7 @@ async function seedIfEmpty(payload: Payload) {
                     { feature: 'UV inspection' },
                 ],
                 popular: true,
+                icon: 'fa-solid fa-star',
                 order: 2,
             },
         })
@@ -244,6 +336,7 @@ async function seedIfEmpty(payload: Payload) {
                     { feature: 'Same-day service' },
                 ],
                 popular: false,
+                icon: 'fa-solid fa-crown',
                 order: 3,
             },
         })

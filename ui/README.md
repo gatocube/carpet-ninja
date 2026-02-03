@@ -27,10 +27,35 @@ Dev server runs at http://localhost:3445
 
 ## Testing
 
+### Local E2E Tests
+
 ```bash
 # Run E2E tests (uses isolated SQLite)
 pnpm test:e2e
+
+# Run with UI
+pnpm test:e2e:ui
 ```
+
+### Production E2E Tests
+
+Test the full flow on production: login to admin, change content, verify on website:
+
+```bash
+# Run production sync test
+TEST_PRODUCTION=true pnpm test:e2e e2e/prod-sync.spec.ts
+```
+
+**What it tests:**
+- ✅ Admin login works with production credentials
+- ✅ Can edit Hero section content via admin UI
+- ✅ Changes appear immediately on the production website
+- ✅ Automatic cleanup (restores original content after test)
+
+**When to run:**
+- After deploying major changes
+- To verify production database connectivity
+- To test admin panel functionality on live site
 
 ## Environment Variables
 

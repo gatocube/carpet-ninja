@@ -43,6 +43,8 @@ const getDatabaseAdapter = () => {
         pool: {
             connectionString: process.env.DATABASE_URL || '',
         },
+        // Auto-create/update tables on startup (important for Vercel deployments)
+        push: true,
     })
 }
 
@@ -51,8 +53,8 @@ const isTestMode = () => process.env.PAYLOAD_TEST_MODE === 'true'
 
 // Build plugins array conditionally
 const plugins = [
-    // Seed plugin - runs in dev and test (not production)
-    seedPlugin({ runInProduction: isTestMode() }),
+    // Seed plugin - runs in dev/test and also first production deploy
+    seedPlugin({ runInProduction: true }),
     // Vercel Blob only when token is available (not in test)
     ...(!isTestMode() && process.env.BLOB_READ_WRITE_TOKEN
         ? [

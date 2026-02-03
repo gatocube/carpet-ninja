@@ -145,13 +145,25 @@ export const SiteSettings: GlobalConfig = {
                     label: 'Coverage',
                     fields: [
                         {
+                            name: 'citiesList',
+                            label: 'Cities (comma separated)',
+                            type: 'textarea',
+                            defaultValue: 'San Francisco, San Mateo, San Jose, Palo Alto, Mountain View',
+                            admin: {
+                                description: 'List of cities served, separated by commas',
+                            },
+                        },
+                        // Legacy field - kept for schema compatibility but hidden
+                        {
                             name: 'cities',
                             type: 'array',
+                            admin: {
+                                hidden: true,
+                            },
                             fields: [
                                 {
                                     name: 'name',
                                     type: 'text',
-                                    required: true,
                                 },
                             ],
                         },

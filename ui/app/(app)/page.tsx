@@ -266,9 +266,12 @@ export default async function Home() {
                                 <h2 className="text-3xl sm:text-4xl font-black">We Serve the <span className="bg-gradient-to-r from-pink-500 to-indigo-500 bg-clip-text text-transparent">Bay Area</span></h2>
                                 <p className="mt-4 text-white/60 leading-relaxed">Mobile service that comes to you: San Francisco • Peninsula • South Bay • East Bay • North Bay.</p>
                                 <ul className="mt-6 grid grid-cols-2 gap-3 text-white/80">
-                                    {settings.cities?.map((city: { name: string }, idx: number) => (
+                                    {(settings.citiesList
+                                        ? settings.citiesList.split(',').map((c: string) => c.trim())
+                                        : (settings.cities?.map((c: { name: string }) => c.name) || [])
+                                    ).map((city: string, idx: number) => (
                                         <li key={idx} className="flex items-center gap-2">
-                                            <i className="fa-solid fa-location-dot text-pink-500"></i> {city.name}
+                                            <i className="fa-solid fa-location-dot text-pink-500"></i> {city}
                                         </li>
                                     ))}
                                 </ul>

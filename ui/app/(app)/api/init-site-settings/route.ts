@@ -29,13 +29,8 @@ export async function POST() {
                 email: siteSettings?.email || 'hello@carpet-ninja.com',
                 instagram: siteSettings?.instagram || '@carpet.ninja',
                 tagline: siteSettings?.tagline || 'Deep Carpet & Upholstery Cleaning, done Ninja-fast.',
-                cities: siteSettings?.cities?.length ? siteSettings.cities : [
-                    { name: 'San Francisco' },
-                    { name: 'San Mateo' },
-                    { name: 'San Jose' },
-                    { name: 'Palo Alto' },
-                    { name: 'Mountain View' },
-                ],
+                citiesList: siteSettings?.citiesList || 'San Francisco, Oakland, San Jose, Palo Alto, Mountain View',
+                cities: [], // Deprecated, keep empty
                 mapEmbedUrl: siteSettings?.mapEmbedUrl || 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d253749.89588270477!2d-122.67501791888054!3d37.75781499767964!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x808f7e2a7f2a2a4d%3A0x31d05b0f6e5c1d2!2sSan%20Francisco%20Bay%20Area!5e0!3m2!1sen!2sus!4v1716944550000',
             },
         })

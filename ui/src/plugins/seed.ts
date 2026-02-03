@@ -77,34 +77,55 @@ export const seedPlugin = (options: SeedPluginOptions = {}) => {
  * Ensure a default admin user exists for development
  */
 async function ensureAdminUser(payload: Payload) {
-    const adminEmail = process.env.PAYLOAD_ADMIN_EMAIL || 'admin@carpet-ninja.com'
-    const adminPassword = process.env.PAYLOAD_ADMIN_PASSWORD || 'admin123'
-
-    try {
-        const existingUsers = await payload.find({
-            collection: 'users',
-            limit: 1,
-        })
-
-        if (existingUsers.totalDocs > 0) {
-            payload.logger.info(`Admin user already exists`)
-            return
+    const admins = [
+        {
+            email: process.env.PAYLOAD_ADMIN_EMAIL || 'admin@carpet-ninja.com',
+            password: process.env.PAYLOAD_ADMIN_PASSWORD || 'admin123',
+            roles: ['admin'],
+        },
+        {
+            email: 'alex@carpet-ninja.com',
+            password: 'barducks',
+            roles: ['admin'],
+        },
+        {
+            email: 'giorgi2510774@mail.ru',
+            password: 'spaghetti39pass',
+            roles: ['admin'],
+        },
+        {
+            email: 'agagent@carpet-ninja.com',
+            password: 'AgAgent2026!',
+            roles: ['admin'],
         }
+    ]
 
-        await payload.create({
-            collection: 'users',
-            data: {
-                email: adminEmail,
-                password: adminPassword,
-                roles: ['admin'],
-            },
-        })
+    for (const admin of admins) {
+        try {
+            const existingUsers = await payload.find({
+                collection: 'users',
+                where: {
+                    email: { equals: admin.email },
+                },
+                limit: 1,
+            })
 
-        payload.logger.info(`✅ Default admin user created: ${adminEmail}`)
-        payload.logger.info(`   Password: ${adminPassword}`)
-        payload.logger.info(`   ⚠️  Change these credentials in production!`)
-    } catch (error) {
-        payload.logger.error(`❌ Failed to create admin user: ${error instanceof Error ? error.message : String(error)}`)
+            if (existingUsers.totalDocs === 0) {
+                await payload.create({
+                    collection: 'users',
+                    data: {
+                        email: admin.email,
+                        password: admin.password,
+                        roles: admin.roles,
+                    },
+                })
+                payload.logger.info(`✅ Admin user created: ${admin.email}`)
+            } else {
+                payload.logger.info(`Admin user already exists: ${admin.email}`)
+            }
+        } catch (error) {
+            payload.logger.error(`❌ Failed to create admin user ${admin.email}: ${error instanceof Error ? error.message : String(error)}`)
+        }
     }
 }
 

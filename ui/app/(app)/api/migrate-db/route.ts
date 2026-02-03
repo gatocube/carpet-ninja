@@ -23,50 +23,32 @@ export async function POST() {
         const client = await pool.connect()
 
         try {
-            // Add visibility columns if they don't exist
-            const visibilityColumns = [
-                'show_hero',
-                'show_services',
-                'show_pricing',
-                'show_results',
-                'show_reviews',
-                'show_coverage',
-                'show_contact',
-            ]
-
-            for (const col of visibilityColumns) {
-                try {
-                    await client.query(`ALTER TABLE site_settings ADD COLUMN IF NOT EXISTS ${col} boolean DEFAULT true`)
-                    migrations.push(`Added column: ${col}`)
-                } catch (err) {
-                    errors.push(`Column ${col}: ${err instanceof Error ? err.message : 'unknown error'}`)
-                }
-            }
+        }
 
 
             // Add cities_list column (snake_case required by Payload)
             try {
-                // Check if snake_case column exists
-                const res = await client.query(`SELECT column_name FROM information_schema.columns WHERE table_name='site_settings' AND column_name='cities_list'`)
-                if (res.rows.length === 0) {
-                    // Check if camelCase exists from previous run
-                    const resCamel = await client.query(`SELECT column_name FROM information_schema.columns WHERE table_name='site_settings' AND column_name='citiesList'`)
-                    if (resCamel.rows.length > 0) {
-                        await client.query(`ALTER TABLE site_settings RENAME COLUMN "citiesList" TO cities_list`)
-                        migrations.push(`Renamed column citiesList to cities_list`)
-                    } else {
-                        await client.query(`ALTER TABLE site_settings ADD COLUMN cities_list text`)
-                        migrations.push(`Added column: cities_list`)
-                    }
+            // Check if snake_case column exists
+            const res = await client.query(`SELECT column_name FROM information_schema.columns WHERE table_name='site_settings' AND column_name='cities_list'`)
+            if (res.rows.length === 0) {
+                // Check if camelCase exists from previous run
+                const resCamel = await client.query(`SELECT column_name FROM information_schema.columns WHERE table_name='site_settings' AND column_name='citiesList'`)
+                if (resCamel.rows.length > 0) {
+                    await client.query(`ALTER TABLE site_settings RENAME COLUMN "citiesList" TO cities_list`)
+                    migrations.push(`Renamed column citiesList to cities_list`)
+                } else {
+                    await client.query(`ALTER TABLE site_settings ADD COLUMN cities_list text`)
+                    migrations.push(`Added column: cities_list`)
                 }
-            } catch (err) {
-                errors.push(`Column cities_list: ${err instanceof Error ? err.message : 'unknown error'}`)
             }
+        } catch (err) {
+            errors.push(`Column cities_list: ${err instanceof Error ? err.message : 'unknown error'}`)
+        }
 
-            // Drop and recreate cities table with correct schema
-            try {
-                await client.query('DROP TABLE IF EXISTS site_settings_cities CASCADE')
-                await client.query(`
+        // Drop and recreate cities table with correct schema
+        try {
+            await client.query('DROP TABLE IF EXISTS site_settings_cities CASCADE')
+            await client.query(`
                     CREATE TABLE site_settings_cities (
                         id TEXT PRIMARY KEY DEFAULT gen_random_uuid()::text,
                         _order INTEGER NOT NULL DEFAULT 0,
@@ -74,14 +56,14 @@ export async function POST() {
                         name VARCHAR(255) NOT NULL
                     )
                 `)
-                migrations.push('Created site_settings_cities table with correct schema')
-            } catch (err) {
-                errors.push(`Cities table: ${err instanceof Error ? err.message : 'unknown error'}`)
-            }
+            migrations.push('Created site_settings_cities table with correct schema')
+        } catch (err) {
+            errors.push(`Cities table: ${err instanceof Error ? err.message : 'unknown error'}`)
+        }
 
-            // Add foreign key if it doesn't exist
-            try {
-                await client.query(`
+        // Add foreign key if it doesn't exist
+        try {
+            await client.query(`
                     DO $$ 
                     BEGIN 
                         IF NOT EXISTS (
@@ -94,56 +76,56 @@ export async function POST() {
                         END IF;
                     END $$;
                 `)
-                migrations.push('Added foreign key constraint')
-            } catch (err) {
-                errors.push(`Foreign key: ${err instanceof Error ? err.message : 'unknown error'}`)
-            }
-
-            // Insert default cities if table is empty
-            try {
-                const result = await client.query('SELECT COUNT(*) as count FROM site_settings_cities')
-                if (parseInt(result.rows[0].count) === 0) {
-                    // Get site_settings id
-                    const settingsResult = await client.query('SELECT id FROM site_settings LIMIT 1')
-                    if (settingsResult.rows.length > 0) {
-                        const parentId = settingsResult.rows[0].id
-                        const cities = ['San Francisco', 'Oakland', 'San Jose', 'Palo Alto', 'Mountain View']
-                        for (let i = 0; i < cities.length; i++) {
-                            await client.query(
-                                'INSERT INTO site_settings_cities (_order, _parent_id, name) VALUES ($1, $2, $3)',
-                                [i, parentId, cities[i]]
-                            )
-                        }
-                        migrations.push(`Inserted ${cities.length} default cities`)
-                    }
-                }
-            } catch (err) {
-                errors.push(`Default cities: ${err instanceof Error ? err.message : 'unknown error'}`)
-            }
-
-        } finally {
-            client.release()
+            migrations.push('Added foreign key constraint')
+        } catch (err) {
+            errors.push(`Foreign key: ${err instanceof Error ? err.message : 'unknown error'}`)
         }
 
-        await pool.end()
+        // Insert default cities if table is empty
+        try {
+            const result = await client.query('SELECT COUNT(*) as count FROM site_settings_cities')
+            if (parseInt(result.rows[0].count) === 0) {
+                // Get site_settings id
+                const settingsResult = await client.query('SELECT id FROM site_settings LIMIT 1')
+                if (settingsResult.rows.length > 0) {
+                    const parentId = settingsResult.rows[0].id
+                    const cities = ['San Francisco', 'Oakland', 'San Jose', 'Palo Alto', 'Mountain View']
+                    for (let i = 0; i < cities.length; i++) {
+                        await client.query(
+                            'INSERT INTO site_settings_cities (_order, _parent_id, name) VALUES ($1, $2, $3)',
+                            [i, parentId, cities[i]]
+                        )
+                    }
+                    migrations.push(`Inserted ${cities.length} default cities`)
+                }
+            }
+        } catch (err) {
+            errors.push(`Default cities: ${err instanceof Error ? err.message : 'unknown error'}`)
+        }
 
-        return NextResponse.json({
-            success: migrations.length > 0 && errors.length === 0,
-            message: 'Migration completed',
-            migrations,
-            errors: errors.length > 0 ? errors : undefined,
-        })
-    } catch (error) {
-        console.error('Migration failed:', error)
-        await pool.end()
-        return NextResponse.json(
-            {
-                success: false,
-                message: error instanceof Error ? error.message : 'Unknown error',
-            },
-            { status: 500 }
-        )
+    } finally {
+        client.release()
     }
+
+    await pool.end()
+
+    return NextResponse.json({
+        success: migrations.length > 0 && errors.length === 0,
+        message: 'Migration completed',
+        migrations,
+        errors: errors.length > 0 ? errors : undefined,
+    })
+} catch (error) {
+    console.error('Migration failed:', error)
+    await pool.end()
+    return NextResponse.json(
+        {
+            success: false,
+            message: error instanceof Error ? error.message : 'Unknown error',
+        },
+        { status: 500 }
+    )
+}
 }
 
 export async function GET() {

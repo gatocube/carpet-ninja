@@ -74,15 +74,20 @@ async function seedIfEmpty(payload: Payload) {
     // Always ensure admin user exists
     await ensureAdminUser(payload)
 
-    // Check if any services exist
-    const existingServices = await payload.find({
-        collection: 'services',
-        limit: 1,
-    })
+    // Check if any services exist (tables may not exist yet on first deploy)
+    try {
+        const existingServices = await payload.find({
+            collection: 'services',
+            limit: 1,
+        })
 
-    if (existingServices.totalDocs > 0) {
-        payload.logger.info('Data already exists, skipping seed')
-        return
+        if (existingServices.totalDocs > 0) {
+            payload.logger.info('Data already exists, skipping seed')
+            return
+        }
+    } catch (error) {
+        // Tables don't exist yet - let Payload create them, then we'll seed
+        payload.logger.info('Tables not found, will seed after schema sync')
     }
 
     payload.logger.info('Seeding initial data...')

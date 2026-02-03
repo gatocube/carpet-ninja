@@ -70,7 +70,7 @@ const plugins = [
 ]
 
 export default buildConfig({
-    serverURL: process.env.NEXT_PUBLIC_SERVER_URL || process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3445',
+    serverURL: process.env.NEXT_PUBLIC_SERVER_URL || (process.env.VERCEL_URL && process.env.VERCEL_URL !== '' ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3445'),
     admin: {
         user: 'users',
         importMap: {

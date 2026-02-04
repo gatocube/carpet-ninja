@@ -52,7 +52,7 @@ async function seedProduction() {
                 console.log(`   ✅ Uploaded: ${filename} (ID: ${media.id})`)
                 return media
             } catch (error) {
-                console.log(`   ❌ Error: ${error.message}`)
+                console.log(`   ❌ Error: ${error instanceof Error ? error.message : String(error)}`)
                 return null
             }
         }

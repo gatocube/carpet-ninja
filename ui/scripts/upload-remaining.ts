@@ -65,7 +65,7 @@ async function uploadRemaining() {
                 await page.waitForTimeout(2000)
                 
             } catch (error) {
-                console.log(`   ❌ Failed: ${error.message}\n`)
+                console.log(`   ❌ Failed: ${error instanceof Error ? error.message : String(error)}\n`)
             }
         }
 
